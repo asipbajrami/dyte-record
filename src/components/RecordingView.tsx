@@ -112,7 +112,13 @@ export default function UIKitMeeting(props: {
                 uiKitConfig.root["dyte-mixed-grid.activeSpotlight"] = [
                     ["dyte-spotlight-grid", { style: { width: "15%" }, layout: "column" }],
                 ];
+                uiKitConfig.root["dyte-name-tag"] = {
+                    props: {
+                        participant: '(participant) => `${participant.name} (${participant.id})`',
+                    },
+                };
             }
+            
             setuiconfig(uiKitConfig);
         }
     }, [client, config]);

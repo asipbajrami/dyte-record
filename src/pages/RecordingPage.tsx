@@ -98,7 +98,7 @@ function RecordingPage() {
 
   if (!authToken) {
     return (
-      <p>authToken not provided in query parameters!!</p>
+      <p>authToken not provided in query parameters!! 2</p>
     );
   }
 

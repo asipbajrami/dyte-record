@@ -15,6 +15,8 @@ const NEGATIVE = 'negative';
 const JUDGE = 'judge';
 const SOLO = 'solo';
 
+const ASPECT_RATIO = 16/9;
+
 type PresetName = typeof AFFIRMATIVE | typeof NEGATIVE | typeof JUDGE | typeof SOLO;
 
 const presetColors: { [key in PresetName]: string } = {
@@ -29,13 +31,11 @@ const ParticipantTile = React.memo(({
                                         presetName,
                                         meeting,
                                         isActiveSpeaker,
-                                        style,
                                     }: {
     participant: DyteParticipant;
     presetName: PresetName;
     meeting: any;
     isActiveSpeaker: boolean;
-    style?: React.CSSProperties;
 }) => {
     const [isVideoReady, setIsVideoReady] = useState(false);
 
@@ -65,36 +65,45 @@ const ParticipantTile = React.memo(({
         <div
             key={participant.id}
             style={{
-                width: '100%',
-                height: '100%',
                 position: 'relative',
+                width: '100%',
+                height: '0',
+                paddingBottom: `${(1/ASPECT_RATIO) * 100}%`,
                 borderRadius: '8px',
                 overflow: 'hidden',
                 border: '2px solid',
                 borderColor: isActiveSpeaker ? 'white' : 'transparent',
                 transition: 'border-color 0.3s ease-in-out',
-                ...style,
             }}
         >
-            <DyteParticipantTile
-                participant={participant}
-                meeting={meeting}
+            <div
                 style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
                     width: '100%',
                     height: '100%',
-                    transition: 'all 0.3s ease-in-out',
                 }}
             >
-                <DyteNameTag
+                <DyteParticipantTile
                     participant={participant}
+                    meeting={meeting}
                     style={{
-                        backgroundColor: presetColors[presetName],
-                        color: 'white',
+                        width: '100%',
+                        height: '100%',
                     }}
                 >
-                    <DyteAudioVisualizer participant={participant} slot="start" />
-                </DyteNameTag>
-            </DyteParticipantTile>
+                    <DyteNameTag
+                        participant={participant}
+                        style={{
+                            backgroundColor: presetColors[presetName],
+                            color: 'white',
+                        }}
+                    >
+                        <DyteAudioVisualizer participant={participant} slot="start" />
+                    </DyteNameTag>
+                </DyteParticipantTile>
+            </div>
             {!isVideoReady && (
                 <div style={{
                     position: 'absolute',
@@ -124,61 +133,61 @@ const renderSpecialLayout = (
 ) => {
     return (
         <div style={{
-            width: '100%',
-            height: '100%',
             display: 'flex',
             flexDirection: 'column',
             gap: '20px',
             padding: '20px',
+            height: '100%',
         }}>
-            {/* Top row with negative and affirmative */}
             <div style={{
                 display: 'flex',
-                flex: 1,
                 gap: '20px',
-                minHeight: '60%',
+                flex: '0 0 auto',
+                width: '100%',
             }}>
-                <ParticipantTile
-                    participant={negativeParticipant}
-                    presetName={NEGATIVE}
-                    meeting={meeting}
-                    isActiveSpeaker={lastActiveSpeaker === negativeParticipant.id}
-                    style={{ flex: 1 }}
-                />
-                <ParticipantTile
-                    participant={affirmativeParticipant}
-                    presetName={AFFIRMATIVE}
-                    meeting={meeting}
-                    isActiveSpeaker={lastActiveSpeaker === affirmativeParticipant.id}
-                    style={{ flex: 1 }}
-                />
-            </div>
-
-            {/* Bottom row with judge and logo */}
-            <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '10px',
-                minHeight: '35%',
-            }}>
-                <div style={{ width: '50%', height: '100%' }}>
+                <div style={{ flex: 1 }}>
                     <ParticipantTile
-                        participant={judgeParticipant}
-                        presetName={JUDGE}
+                        participant={negativeParticipant}
+                        presetName={NEGATIVE}
                         meeting={meeting}
-                        isActiveSpeaker={lastActiveSpeaker === judgeParticipant.id}
+                        isActiveSpeaker={lastActiveSpeaker === negativeParticipant.id}
                     />
                 </div>
-                <img
-                    src={logo}
-                    alt="Logo"
-                    style={{
-                        maxWidth: '150px',
-                        maxHeight: '150px',
-                        objectFit: 'contain',
-                    }}
+                <div style={{ flex: 1 }}>
+                    <ParticipantTile
+                        participant={affirmativeParticipant}
+                        presetName={AFFIRMATIVE}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === affirmativeParticipant.id}
+                    />
+                </div>
+            </div>
+
+            <div style={{
+                width: '50%',
+                margin: '0 auto',
+            }}>
+                <ParticipantTile
+                    participant={judgeParticipant}
+                    presetName={JUDGE}
+                    meeting={meeting}
+                    isActiveSpeaker={lastActiveSpeaker === judgeParticipant.id}
                 />
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    marginTop: '20px',
+                }}>
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        style={{
+                            maxWidth: '150px',
+                            maxHeight: '150px',
+                            objectFit: 'contain',
+                        }}
+                    />
+                </div>
             </div>
         </div>
     );
@@ -192,83 +201,80 @@ const renderDefaultLayout = (
     meeting: any
 ) => {
     return (
-        <div
-            style={{
+        <div style={{
+            display: 'flex',
+            height: '100%',
+        }}>
+            <div style={{
+                width: '33.33%',
+                padding: '10px',
                 display: 'flex',
-                flex: 1,
-                position: 'relative',
-                overflow: 'hidden',
-            }}
-        >
-            <div
-                style={{
-                    width: '33.33%',
-                    padding: '10px',
-                    display: 'grid',
-                    gridTemplateRows: `repeat(${leftColumnParticipants.length}, 1fr)`,
-                    gap: '10px',
-                }}
-            >
+                flexDirection: 'column',
+                gap: '10px',
+            }}>
                 {leftColumnParticipants.map((participant) => (
-                    <ParticipantTile
-                        key={participant.id}
-                        participant={participant}
-                        presetName={participant.presetName as PresetName}
-                        meeting={meeting}
-                        isActiveSpeaker={lastActiveSpeaker === participant.id}
-                    />
+                    <div key={participant.id}>
+                        <ParticipantTile
+                            participant={participant}
+                            presetName={participant.presetName as PresetName}
+                            meeting={meeting}
+                            isActiveSpeaker={lastActiveSpeaker === participant.id}
+                        />
+                    </div>
                 ))}
             </div>
 
-            <div
-                style={{
-                    width: '33.33%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    padding: '10px',
-                    gap: '10px',
-                }}
-            >
+            <div style={{
+                width: '33.33%',
+                padding: '10px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+            }}>
                 {judgeParticipants.map((participant) => (
-                    <ParticipantTile
-                        key={participant.id}
-                        participant={participant}
-                        presetName={JUDGE}
-                        meeting={meeting}
-                        isActiveSpeaker={lastActiveSpeaker === participant.id}
-                    />
+                    <div key={participant.id}>
+                        <ParticipantTile
+                            participant={participant}
+                            presetName={JUDGE}
+                            meeting={meeting}
+                            isActiveSpeaker={lastActiveSpeaker === participant.id}
+                        />
+                    </div>
                 ))}
-                <img
-                    src={logo}
-                    alt="Logo"
-                    style={{
-                        maxWidth: '150px',
-                        maxHeight: '150px',
-                        objectFit: 'contain',
-                        marginTop: '10px',
-                    }}
-                />
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    marginTop: 'auto',
+                    paddingTop: '20px',
+                }}>
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        style={{
+                            maxWidth: '150px',
+                            maxHeight: '150px',
+                            objectFit: 'contain',
+                        }}
+                    />
+                </div>
             </div>
 
-            <div
-                style={{
-                    width: '33.33%',
-                    padding: '10px',
-                    display: 'grid',
-                    gridTemplateRows: `repeat(${rightColumnParticipants.length}, 1fr)`,
-                    gap: '10px',
-                }}
-            >
+            <div style={{
+                width: '33.33%',
+                padding: '10px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+            }}>
                 {rightColumnParticipants.map((participant) => (
-                    <ParticipantTile
-                        key={participant.id}
-                        participant={participant}
-                        presetName={participant.presetName as PresetName}
-                        meeting={meeting}
-                        isActiveSpeaker={lastActiveSpeaker === participant.id}
-                    />
+                    <div key={participant.id}>
+                        <ParticipantTile
+                            participant={participant}
+                            presetName={participant.presetName as PresetName}
+                            meeting={meeting}
+                            isActiveSpeaker={lastActiveSpeaker === participant.id}
+                        />
+                    </div>
                 ))}
             </div>
         </div>
@@ -339,23 +345,18 @@ export default function RecordingView() {
         }
     });
 
-    // Check for special case: exactly 1 negative, 1 affirmative, and 1 judge
     const isSpecialCase = negativeParticipants.length === 1 &&
         affirmativeParticipants.length === 1 &&
         judgeParticipants.length === 1;
 
     return (
-        <main
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                width: '100vw',
-                height: '100vh',
-                backgroundColor: '#000',
-                color: 'white',
-                overflow: 'hidden',
-            }}
-        >
+        <main style={{
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: '#000',
+            color: 'white',
+            overflow: 'hidden',
+        }}>
             {isSpecialCase ? (
                 renderSpecialLayout(
                     negativeParticipants[0],

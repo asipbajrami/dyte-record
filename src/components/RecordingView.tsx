@@ -16,14 +16,16 @@ const JUDGE = 'judge';
 const SOLO = 'solo';
 
 const ASPECT_RATIO = 16/9;
+const GAP_BETWEEN_TILES = '10px';
+const ACTIVE_SPEAKER_BORDER_RADIUS = '12px';
 
 type PresetName = typeof AFFIRMATIVE | typeof NEGATIVE | typeof JUDGE | typeof SOLO;
 
 const presetColors: { [key in PresetName]: string } = {
-    [AFFIRMATIVE]: '#043B6D', // Blue
-    [NEGATIVE]: '#641316',    // Red
-    [JUDGE]: '#0D0B0E',      // Black
-    [SOLO]: '#471a55',       // Purple
+    [AFFIRMATIVE]: '#043B6D',
+    [NEGATIVE]: '#641316',
+    [JUDGE]: '#0D0B0E',
+    [SOLO]: '#471a55',
 };
 
 const ParticipantTile = React.memo(({
@@ -31,11 +33,13 @@ const ParticipantTile = React.memo(({
                                         presetName,
                                         meeting,
                                         isActiveSpeaker,
+                                        style,
                                     }: {
     participant: DyteParticipant;
     presetName: PresetName;
     meeting: any;
     isActiveSpeaker: boolean;
+    style?: React.CSSProperties;
 }) => {
     const [isVideoReady, setIsVideoReady] = useState(false);
 
@@ -49,13 +53,8 @@ const ParticipantTile = React.memo(({
         };
 
         checkVideoTrack();
-
-        const videoUpdateListener = () => {
-            checkVideoTrack();
-        };
-
+        const videoUpdateListener = () => checkVideoTrack();
         participant.on('videoUpdate', videoUpdateListener);
-
         return () => {
             participant.off('videoUpdate', videoUpdateListener);
         };
@@ -63,17 +62,17 @@ const ParticipantTile = React.memo(({
 
     return (
         <div
-            key={participant.id}
             style={{
                 position: 'relative',
                 width: '100%',
                 height: '0',
                 paddingBottom: `${(1/ASPECT_RATIO) * 100}%`,
-                borderRadius: '8px',
+                borderRadius: ACTIVE_SPEAKER_BORDER_RADIUS,
                 overflow: 'hidden',
-                border: '2px solid',
+                border: '3px solid',
                 borderColor: isActiveSpeaker ? 'white' : 'transparent',
                 transition: 'border-color 0.3s ease-in-out',
+                ...style,
             }}
         >
             <div
@@ -83,6 +82,8 @@ const ParticipantTile = React.memo(({
                     left: 0,
                     width: '100%',
                     height: '100%',
+                    borderRadius: ACTIVE_SPEAKER_BORDER_RADIUS,
+                    overflow: 'hidden',
                 }}
             >
                 <DyteParticipantTile
@@ -116,6 +117,7 @@ const ParticipantTile = React.memo(({
                     alignItems: 'center',
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
                     color: 'white',
+                    borderRadius: ACTIVE_SPEAKER_BORDER_RADIUS,
                 }}>
                     Loading...
                 </div>
@@ -124,7 +126,19 @@ const ParticipantTile = React.memo(({
     );
 });
 
-const renderSpecialLayout = (
+const Logo = () => (
+    <img
+        src={logo}
+        alt="Logo"
+        style={{
+            maxWidth: '120px',
+            maxHeight: '120px',
+            objectFit: 'contain',
+        }}
+    />
+);
+
+const renderOneOnOneLayout = (
     negativeParticipant: DyteParticipant,
     affirmativeParticipant: DyteParticipant,
     judgeParticipant: DyteParticipant,
@@ -135,15 +149,14 @@ const renderSpecialLayout = (
         <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '20px',
-            padding: '20px',
             height: '100%',
+            padding: '20px',
+            gap: '20px',
         }}>
             <div style={{
                 display: 'flex',
                 gap: '20px',
-                flex: '0 0 auto',
-                width: '100%',
+                height: '60%',
             }}>
                 <div style={{ flex: 1 }}>
                     <ParticipantTile
@@ -162,32 +175,113 @@ const renderSpecialLayout = (
                     />
                 </div>
             </div>
-
             <div style={{
-                width: '50%',
-                margin: '0 auto',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '10px',
+            }}>
+                <div style={{ width: '40%' }}>
+                    <ParticipantTile
+                        participant={judgeParticipant}
+                        presetName={JUDGE}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === judgeParticipant.id}
+                    />
+                </div>
+                <Logo />
+            </div>
+        </div>
+    );
+};
+
+const renderTwoJudgesLayout = (
+    leftColumnParticipants: DyteParticipant[],
+    rightColumnParticipants: DyteParticipant[],
+    judgeParticipants: DyteParticipant[],
+    lastActiveSpeaker: string,
+    meeting: any
+) => {
+    return (
+        <div style={{
+            position: 'relative',
+            height: '100%',
+            padding: '20px',
+        }}>
+            {/* Top Judge */}
+            <div style={{
+                position: 'absolute',
+                top: '20px',
+                left: '30%',
+                right: '30%',
+                zIndex: 2,
             }}>
                 <ParticipantTile
-                    participant={judgeParticipant}
+                    participant={judgeParticipants[0]}
                     presetName={JUDGE}
                     meeting={meeting}
-                    isActiveSpeaker={lastActiveSpeaker === judgeParticipant.id}
+                    isActiveSpeaker={lastActiveSpeaker === judgeParticipants[0].id}
                 />
+            </div>
+
+            {/* Main Content */}
+            <div style={{
+                display: 'flex',
+                height: '100%',
+                paddingTop: '15%',
+                paddingBottom: '15%',
+                gap: '20px',
+            }}>
+                <div style={{ flex: 1 }}>
+                    {leftColumnParticipants.map((participant) => (
+                        <div key={participant.id} style={{ marginBottom: GAP_BETWEEN_TILES }}>
+                            <ParticipantTile
+                                participant={participant}
+                                presetName={participant.presetName as PresetName}
+                                meeting={meeting}
+                                isActiveSpeaker={lastActiveSpeaker === participant.id}
+                            />
+                        </div>
+                    ))}
+                </div>
+
                 <div style={{
                     display: 'flex',
                     justifyContent: 'center',
-                    marginTop: '20px',
+                    alignItems: 'center',
+                    width: '120px',
                 }}>
-                    <img
-                        src={logo}
-                        alt="Logo"
-                        style={{
-                            maxWidth: '150px',
-                            maxHeight: '150px',
-                            objectFit: 'contain',
-                        }}
-                    />
+                    <Logo />
                 </div>
+
+                <div style={{ flex: 1 }}>
+                    {rightColumnParticipants.map((participant) => (
+                        <div key={participant.id} style={{ marginBottom: GAP_BETWEEN_TILES }}>
+                            <ParticipantTile
+                                participant={participant}
+                                presetName={participant.presetName as PresetName}
+                                meeting={meeting}
+                                isActiveSpeaker={lastActiveSpeaker === participant.id}
+                            />
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Bottom Judge */}
+            <div style={{
+                position: 'absolute',
+                bottom: '20px',
+                left: '30%',
+                right: '30%',
+                zIndex: 2,
+            }}>
+                <ParticipantTile
+                    participant={judgeParticipants[1]}
+                    presetName={JUDGE}
+                    meeting={meeting}
+                    isActiveSpeaker={lastActiveSpeaker === judgeParticipants[1].id}
+                />
             </div>
         </div>
     );
@@ -204,35 +298,34 @@ const renderDefaultLayout = (
         <div style={{
             display: 'flex',
             height: '100%',
+            padding: '20px',
+            gap: '20px',
         }}>
             <div style={{
                 width: '33.33%',
-                padding: '10px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px',
+                gap: GAP_BETWEEN_TILES,
             }}>
                 {leftColumnParticipants.map((participant) => (
-                    <div key={participant.id}>
-                        <ParticipantTile
-                            participant={participant}
-                            presetName={participant.presetName as PresetName}
-                            meeting={meeting}
-                            isActiveSpeaker={lastActiveSpeaker === participant.id}
-                        />
-                    </div>
+                    <ParticipantTile
+                        key={participant.id}
+                        participant={participant}
+                        presetName={participant.presetName as PresetName}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === participant.id}
+                    />
                 ))}
             </div>
 
             <div style={{
                 width: '33.33%',
-                padding: '10px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px',
+                gap: GAP_BETWEEN_TILES,
             }}>
                 {judgeParticipants.map((participant) => (
-                    <div key={participant.id}>
+                    <div key={participant.id} style={{ marginBottom: GAP_BETWEEN_TILES }}>
                         <ParticipantTile
                             participant={participant}
                             presetName={JUDGE}
@@ -242,39 +335,28 @@ const renderDefaultLayout = (
                     </div>
                 ))}
                 <div style={{
+                    marginTop: 'auto',
                     display: 'flex',
                     justifyContent: 'center',
-                    marginTop: 'auto',
-                    paddingTop: '20px',
                 }}>
-                    <img
-                        src={logo}
-                        alt="Logo"
-                        style={{
-                            maxWidth: '150px',
-                            maxHeight: '150px',
-                            objectFit: 'contain',
-                        }}
-                    />
+                    <Logo />
                 </div>
             </div>
 
             <div style={{
                 width: '33.33%',
-                padding: '10px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px',
+                gap: GAP_BETWEEN_TILES,
             }}>
                 {rightColumnParticipants.map((participant) => (
-                    <div key={participant.id}>
-                        <ParticipantTile
-                            participant={participant}
-                            presetName={participant.presetName as PresetName}
-                            meeting={meeting}
-                            isActiveSpeaker={lastActiveSpeaker === participant.id}
-                        />
-                    </div>
+                    <ParticipantTile
+                        key={participant.id}
+                        participant={participant}
+                        presetName={participant.presetName as PresetName}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === participant.id}
+                    />
                 ))}
             </div>
         </div>
@@ -301,7 +383,11 @@ export default function RecordingView() {
     );
 
     useEffect(() => {
-        debouncedSetParticipants(() => joinedParticipants);
+        const updateParticipants = () => {
+            debouncedSetParticipants(() => joinedParticipants);
+        };
+
+        updateParticipants();
 
         const handleParticipantJoin = (participant: DyteParticipant) => {
             debouncedSetParticipants((prev) => [...prev, participant]);
@@ -320,14 +406,14 @@ export default function RecordingView() {
         };
     }, [meeting, joinedParticipants, debouncedSetParticipants]);
 
-    const getParticipantsByPreset = (
+    const getParticipantsByPreset = useCallback((
         presetNames: PresetName | PresetName[]
     ): DyteParticipant[] => {
         const names = Array.isArray(presetNames) ? presetNames : [presetNames];
         return participants.filter(
             (p) => p.presetName && names.includes(p.presetName as PresetName)
         );
-    };
+    }, [participants]);
 
     const negativeParticipants = getParticipantsByPreset(NEGATIVE);
     const affirmativeParticipants = getParticipantsByPreset(AFFIRMATIVE);
@@ -345,9 +431,12 @@ export default function RecordingView() {
         }
     });
 
-    const isSpecialCase = negativeParticipants.length === 1 &&
+    const isOneOnOne =
+        negativeParticipants.length === 1 &&
         affirmativeParticipants.length === 1 &&
         judgeParticipants.length === 1;
+
+    const hasTwoJudges = judgeParticipants.length === 2;
 
     return (
         <main style={{
@@ -357,11 +446,19 @@ export default function RecordingView() {
             color: 'white',
             overflow: 'hidden',
         }}>
-            {isSpecialCase ? (
-                renderSpecialLayout(
+            {isOneOnOne ? (
+                renderOneOnOneLayout(
                     negativeParticipants[0],
                     affirmativeParticipants[0],
                     judgeParticipants[0],
+                    lastActiveSpeaker,
+                    meeting
+                )
+            ) : hasTwoJudges ? (
+                renderTwoJudgesLayout(
+                    leftColumnParticipants,
+                    rightColumnParticipants,
+                    judgeParticipants,
                     lastActiveSpeaker,
                     meeting
                 )

@@ -1,163 +1,277 @@
-import React, { useEffect, useRef, useState } from "react";
-import { DyteProvider, useDyteClient } from "@dytesdk/react-web-core";
-import { DyteGrid, DyteParticipantsAudio, DyteSpinner, defaultConfig } from "@dytesdk/react-ui-kit";
+import React, { useEffect, useState, useCallback } from 'react';
+import { debounce } from 'lodash';
 import {
-    generateConfig,
-    provideDyteDesignSystem,
-    UIConfig,
-} from "@dytesdk/ui-kit";
-import { MeetingConfig } from "../types";
+  DyteParticipantsAudio,
+  DyteParticipantTile,
+  DyteNameTag,
+  DyteAudioVisualizer,
+} from '@dytesdk/react-ui-kit';
+import { useDyteMeeting, useDyteSelector } from '@dytesdk/react-web-core';
+import { DyteParticipant } from '@dytesdk/web-core';
+import logo from '../assets/logo.png';
 
-import { DyteRecording } from "@dytesdk/recording-sdk";
+const AFFIRMATIVE = 'affirmative';
+const NEGATIVE = 'negative';
+const JUDGE = 'judge';
+const SOLO = 'solo';
 
-const defaultUIConfig = {
-    ...defaultConfig,
-    designTokens: {
-        borderRadius: 'rounded',
-        borderWidth: 'thin',
-        spacingBase: 4,
-        theme: 'dark',
-        logo: '',
-        colors: {
-            brand: {
-                '300': '#023dd0',
-                '400': '#0248f5',
-                '500': '#2160fd',
-                '600': '#3e75fd',
-                '700': '#5c8afe',
-            },
-            background: {
-                '600': '#222222',
-                '700': '#1f1f1f',
-                '800': '#1b1b1b',
-                '900': '#181818',
-                '1000': '#141414',
-            },
-            danger: '#FF2D2D',
-            text: '#EEEEEE',
-            'text-on-brand': '#EEEEEE',
-            success: '#62A504',
-            'video-bg': '#191919',
-            warning: '#FFCD07',
-        },
-    }
-}
+type PresetName = typeof AFFIRMATIVE | typeof NEGATIVE | typeof JUDGE | typeof SOLO;
 
-export default function UIKitMeeting(props: {
-    roomName: string;
-    authToken: string;
-    config: MeetingConfig;
-    apiBase: string | null;
-}) {
-    const { roomName, authToken, config, apiBase } = props;
-    const [uiconfig, setuiconfig] = useState<UIConfig | null>(null);
-    const [client, initClient] = useDyteClient();
-    const [overrides, setOverrides] = useState({});
-    const elementRef = useRef(null);
+const presetColors: { [key in PresetName]: string } = {
+  [AFFIRMATIVE]: '#043B6D', // Blue
+  [NEGATIVE]: '#641316',    // Red
+  [JUDGE]: '#0D0B0E',       // Black 
+  [SOLO]: '#471a55',        // Purple
+};
 
-    useEffect(() => {
-        if(!authToken){
-            return;
-        }
-        async function setupDyteMeeting(){
-            const recordingSDK = new DyteRecording({ });
-            const meetingObj = await initClient({
-                roomName,
-                authToken,
-                defaults: {
-                    audio: false,
-                    video: false,
-                },
-                apiBase: apiBase ?? 'https://api.cluster.dyte.in',
-            });
-            await recordingSDK.init(meetingObj);
-        }
-        setupDyteMeeting();
+const ParticipantTile = React.memo(({
+  participant,
+  presetName,
+  meeting,
+}: {
+  participant: DyteParticipant;
+  presetName: PresetName;
+  meeting: any;
+}) => {
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
-    }, [authToken]);
+  useEffect(() => {
+    console.log(`Participant ${participant.name} (${participant.id}): Video track status:`, participant.videoEnabled);
+    
+    const checkVideoTrack = () => {
+      if (participant.videoEnabled && participant.videoTrack) {
+        console.log(`Participant ${participant.name} (${participant.id}): Video track ready`);
+        setIsVideoReady(true);
+      } else {
+        console.log(`Participant ${participant.name} (${participant.id}): Video track not ready`);
+        setIsVideoReady(false);
+      }
+    };
 
-    useEffect(() => {
-        if (client !== undefined) {
-            let uiKitConfig = defaultUIConfig as UIConfig;
+    checkVideoTrack();
 
-            try {
-                const presetConfig = client.self.suggestedTheme;
-                uiKitConfig = generateConfig(presetConfig).config;
-            } catch (error) {
-                uiKitConfig = defaultUIConfig as UIConfig;
-            }
+    const videoUpdateListener = () => {
+      console.log(`Participant ${participant.name} (${participant.id}): Video update event`);
+      checkVideoTrack();
+    };
 
-            if (client.__internals__.features.hasFeature('video_subscription_override')) {
-                console.log('enbale video subscription override');
-                try {
-                    const overrides = JSON.parse(client.__internals__.features.getFeatureValue('video_subscription_override'));
-                    const preset = overrides[client.self.organizationId] ?? [];
-                    console.log('subscription override', preset);
-                    if (preset && preset.length > 0) {
-                        setOverrides({ videoUnsubscribed: { preset }});
-                    }
-                }   catch (error) {
-                    console.log(error);
-                }
-            }
+    participant.on('videoUpdate', videoUpdateListener);
 
-            if (uiKitConfig.root) {
-                uiKitConfig.root["dyte-mixed-grid"] = {
-                    states: ["activeSpotlight"],
-                    children: [
-                        ["dyte-simple-grid", { style: { width: "15%" } }],
-                    ],
-                };
+    return () => {
+      participant.off('videoUpdate', videoUpdateListener);
+    };
+  }, [participant]);
 
-                uiKitConfig.root["dyte-mixed-grid.activeSpotlight"] = [
-                    ["dyte-spotlight-grid", { style: { width: "15%" }, layout: "column" }],
-                ];
-                uiKitConfig.root["dyte-name-tag"] = {
-                    props: {
-                        participant: '(participant) => `${participant.name} (${participant.id})`',
-                    },
-                };
-            }
-            
-            setuiconfig(uiKitConfig);
-        }
-    }, [client, config]);
-
-    useEffect(() => {
-        if (elementRef.current && uiconfig && uiconfig.designTokens) {
-            provideDyteDesignSystem(elementRef.current, uiconfig.designTokens);
-        }
-    }, [elementRef, uiconfig]);
-
-    if (!client || !uiconfig) {
-        return (
-            <div style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "100vh",
-            }}>
-                <DyteSpinner />
-            </div>
-        );
-    }
-
-    return (
-        <div
-            style={{
-                width: "100vw",
-                height: "100vh",
-                backgroundColor:
-                    "rgba(var(--dyte-colors-background-1000, 8 8 8))",
-            }}
-            ref={elementRef}
+  return (
+    <div
+      key={participant.id}
+      style={{
+        width: '100%',
+        position: 'relative',
+        borderRadius: '8px',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          position: 'relative',
+          width: '100%',
+          paddingTop: '56.25%', // 16:9 aspect ratio
+        }}
+      >
+        <DyteParticipantTile
+          key={participant.id}
+          participant={participant}
+          meeting={meeting}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            transition: 'all 0.3s ease-in-out',
+          }}
         >
-            <DyteGrid
-                config={uiconfig}
-                meeting={client}
-                overrides={overrides}
-            />
-            <DyteParticipantsAudio meeting={client} />
+          <DyteNameTag
+            participant={participant}
+            style={{
+              backgroundColor: presetColors[presetName],
+              color: 'white',
+            }}
+          >
+            <DyteAudioVisualizer participant={participant} slot="start" />
+          </DyteNameTag>
+        </DyteParticipantTile>
+      </div>
+      {!isVideoReady && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          color: 'white',
+        }}>
+          Loading...
         </div>
+      )}
+    </div>
+  );
+});
+
+export default function RecordingView() {
+  const { meeting } = useDyteMeeting();
+  const [participants, setParticipants] = useState<DyteParticipant[]>([]);
+
+  const joinedParticipants = useDyteSelector((meeting) =>
+    meeting.participants.joined.toArray()
+  );
+
+  const debouncedSetParticipants = useCallback(
+    debounce((updater: (prev: DyteParticipant[]) => DyteParticipant[]) => {
+      setParticipants(updater);
+    }, 100),
+    []
+  );
+
+  useEffect(() => {
+    console.log('Joined participants:', joinedParticipants);
+    debouncedSetParticipants(() => joinedParticipants);
+
+    const handleParticipantJoin = (participant: DyteParticipant) => {
+      console.log('Participant joined:', participant);
+      debouncedSetParticipants((prev) => [...prev, participant]);
+    };
+
+    const handleParticipantLeave = (participant: DyteParticipant) => {
+      console.log('Participant left:', participant);
+      debouncedSetParticipants((prev) => prev.filter((p) => p.id !== participant.id));
+    };
+
+    meeting.participants.joined.on('participantJoined', handleParticipantJoin);
+    meeting.participants.joined.on('participantLeft', handleParticipantLeave);
+
+    return () => {
+      meeting.participants.joined.off('participantJoined', handleParticipantJoin);
+      meeting.participants.joined.off('participantLeft', handleParticipantLeave);
+    };
+  }, [meeting, joinedParticipants, debouncedSetParticipants]);
+
+  const getParticipantsByPreset = (
+    presetNames: PresetName | PresetName[]
+  ): DyteParticipant[] => {
+    const names = Array.isArray(presetNames) ? presetNames : [presetNames];
+    return participants.filter(
+      (p) => p.presetName && names.includes(p.presetName as PresetName)
     );
+  };
+
+  const negativeParticipants = getParticipantsByPreset(NEGATIVE);
+  const affirmativeParticipants = getParticipantsByPreset(AFFIRMATIVE);
+  const judgeParticipants = getParticipantsByPreset(JUDGE);
+  const soloParticipants = getParticipantsByPreset(SOLO);
+
+  const leftColumnParticipants = [...negativeParticipants];
+  const rightColumnParticipants = [...affirmativeParticipants];
+
+  soloParticipants.forEach((participant, index) => {
+    if (index % 2 === 0) {
+      leftColumnParticipants.push(participant);
+    } else {
+      rightColumnParticipants.push(participant);
+    }
+  });
+
+  const renderParticipantsColumn = (
+    participants: DyteParticipant[],
+    columnStyle: React.CSSProperties
+  ) => {
+    return (
+      <div
+        style={{
+          ...columnStyle,
+          display: 'grid',
+          gridTemplateRows: `repeat(${participants.length}, 1fr)`,
+          gap: '10px',
+        }}
+      >
+        {participants.map((participant) => (
+          <ParticipantTile
+            key={participant.id}
+            participant={participant}
+            presetName={participant.presetName as PresetName}
+            meeting={meeting}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    <main
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: '#000',
+        color: 'white',
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          flex: 1,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {renderParticipantsColumn(leftColumnParticipants, {
+          width: '33.33%',
+          padding: '10px',
+        })}
+
+        <div
+          style={{
+            width: '33.33%',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: '10px',
+          }}
+        >
+          {renderParticipantsColumn(judgeParticipants, {
+            width: '100%',
+          })}
+          <div
+            style={{
+              marginTop: '20px',
+            }}
+          >
+            <img
+              src={logo}
+              alt="Logo"
+              style={{
+                maxWidth: '150px',
+                maxHeight: '150px',
+                objectFit: 'contain',
+              }}
+            />
+          </div>
+        </div>
+
+        {renderParticipantsColumn(rightColumnParticipants, {
+          width: '33.33%',
+          padding: '10px',
+        })}
+      </div>
+      <DyteParticipantsAudio meeting={meeting} />
+    </main>
+  );
 }

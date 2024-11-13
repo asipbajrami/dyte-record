@@ -125,14 +125,13 @@ const ParticipantTile = React.memo(({
         </div>
     );
 });
-
 const Logo = () => (
     <img
         src={logo}
         alt="Logo"
         style={{
-            maxWidth: '120px',
-            maxHeight: '120px',
+            width: '100px',
+            height: '100px',
             objectFit: 'contain',
         }}
     />
@@ -152,11 +151,14 @@ const renderOneOnOneLayout = (
             height: '100%',
             padding: '20px',
             gap: '20px',
+            maxWidth: '1920px',
+            margin: '0 auto',
         }}>
+            {/* Top row for negative and affirmative - taking 70% of vertical space */}
             <div style={{
                 display: 'flex',
                 gap: '20px',
-                height: '60%',
+                height: '65%',
             }}>
                 <div style={{ flex: 1 }}>
                     <ParticipantTile
@@ -175,13 +177,16 @@ const renderOneOnOneLayout = (
                     />
                 </div>
             </div>
+
+            {/* Bottom container for judge and logo - taking 30% of vertical space */}
             <div style={{
+                height: '30%',
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
                 gap: '10px',
             }}>
-                <div style={{ width: '40%' }}>
+                <div style={{ width: '35%' }}>
                     <ParticipantTile
                         participant={judgeParticipant}
                         presetName={JUDGE}
@@ -189,7 +194,14 @@ const renderOneOnOneLayout = (
                         isActiveSpeaker={lastActiveSpeaker === judgeParticipant.id}
                     />
                 </div>
-                <Logo />
+                <div style={{
+                    marginTop: '10px',
+                    height: '60px', // Fixed height for logo container
+                    display: 'flex',
+                    alignItems: 'center',
+                }}>
+                    <Logo />
+                </div>
             </div>
         </div>
     );
@@ -208,12 +220,13 @@ const renderTwoJudgesLayout = (
             height: '100%',
             padding: '20px',
         }}>
-            {/* Top Judge */}
+            {/* Top Judge - 25% of viewport height */}
             <div style={{
                 position: 'absolute',
                 top: '20px',
-                left: '30%',
-                right: '30%',
+                left: '25%',
+                right: '25%',
+                height: '22vh',
                 zIndex: 2,
             }}>
                 <ParticipantTile
@@ -228,52 +241,66 @@ const renderTwoJudgesLayout = (
             <div style={{
                 display: 'flex',
                 height: '100%',
-                paddingTop: '15%',
-                paddingBottom: '15%',
+                paddingTop: '25vh',
+                paddingBottom: '25vh',
                 gap: '20px',
+                justifyContent: 'center',
+                alignItems: 'center',
             }}>
-                <div style={{ flex: 1 }}>
+                {/* Left Column */}
+                <div style={{
+                    width: '35%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                }}>
                     {leftColumnParticipants.map((participant) => (
-                        <div key={participant.id} style={{ marginBottom: GAP_BETWEEN_TILES }}>
-                            <ParticipantTile
-                                participant={participant}
-                                presetName={participant.presetName as PresetName}
-                                meeting={meeting}
-                                isActiveSpeaker={lastActiveSpeaker === participant.id}
-                            />
-                        </div>
+                        <ParticipantTile
+                            key={participant.id}
+                            participant={participant}
+                            presetName={participant.presetName as PresetName}
+                            meeting={meeting}
+                            isActiveSpeaker={lastActiveSpeaker === participant.id}
+                        />
                     ))}
                 </div>
 
+                {/* Center Logo */}
                 <div style={{
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    width: '120px',
+                    padding: '0 20px',
                 }}>
                     <Logo />
                 </div>
 
-                <div style={{ flex: 1 }}>
+                {/* Right Column */}
+                <div style={{
+                    width: '35%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                }}>
                     {rightColumnParticipants.map((participant) => (
-                        <div key={participant.id} style={{ marginBottom: GAP_BETWEEN_TILES }}>
-                            <ParticipantTile
-                                participant={participant}
-                                presetName={participant.presetName as PresetName}
-                                meeting={meeting}
-                                isActiveSpeaker={lastActiveSpeaker === participant.id}
-                            />
-                        </div>
+                        <ParticipantTile
+                            key={participant.id}
+                            participant={participant}
+                            presetName={participant.presetName as PresetName}
+                            meeting={meeting}
+                            isActiveSpeaker={lastActiveSpeaker === participant.id}
+                        />
                     ))}
                 </div>
             </div>
 
-            {/* Bottom Judge */}
+            {/* Bottom Judge - 25% of viewport height */}
             <div style={{
                 position: 'absolute',
                 bottom: '20px',
-                left: '30%',
-                right: '30%',
+                left: '25%',
+                right: '25%',
+                height: '22vh',
                 zIndex: 2,
             }}>
                 <ParticipantTile
@@ -286,7 +313,6 @@ const renderTwoJudgesLayout = (
         </div>
     );
 };
-
 const renderDefaultLayout = (
     leftColumnParticipants: DyteParticipant[],
     rightColumnParticipants: DyteParticipant[],
@@ -300,6 +326,8 @@ const renderDefaultLayout = (
             height: '100%',
             padding: '20px',
             gap: '20px',
+            maxWidth: '1920px',
+            margin: '0 auto',
         }}>
             <div style={{
                 width: '33.33%',
@@ -336,6 +364,7 @@ const renderDefaultLayout = (
                 ))}
                 <div style={{
                     marginTop: 'auto',
+                    marginBottom: '20px',
                     display: 'flex',
                     justifyContent: 'center',
                 }}>

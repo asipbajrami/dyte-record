@@ -69,6 +69,7 @@ const ParticipantTile = React.memo(({
             key={participant.id}
             style={{
                 width: '100%',
+                height: '100%',
                 position: 'relative',
                 borderRadius: '8px',
                 overflow: 'hidden',
@@ -77,37 +78,25 @@ const ParticipantTile = React.memo(({
                 transition: 'border-color 0.3s ease-in-out',
             }}
         >
-            <div
+            <DyteParticipantTile
+                participant={participant}
+                meeting={meeting}
                 style={{
-                    position: 'relative',
                     width: '100%',
-                    paddingTop: '56.25%', // 16:9 aspect ratio
+                    height: '100%',
+                    transition: 'all 0.3s ease-in-out',
                 }}
             >
-                <DyteParticipantTile
-                    key={participant.id}
+                <DyteNameTag
                     participant={participant}
-                    meeting={meeting}
                     style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        transition: 'all 0.3s ease-in-out',
+                        backgroundColor: presetColors[presetName],
+                        color: 'white',
                     }}
                 >
-                    <DyteNameTag
-                        participant={participant}
-                        style={{
-                            backgroundColor: presetColors[presetName],
-                            color: 'white',
-                        }}
-                    >
-                        <DyteAudioVisualizer participant={participant} slot="start" />
-                    </DyteNameTag>
-                </DyteParticipantTile>
-            </div>
+                    <DyteAudioVisualizer participant={participant} slot="start" />
+                </DyteNameTag>
+            </DyteParticipantTile>
             {!isVideoReady && (
                 <div style={{
                     position: 'absolute',
@@ -128,11 +117,176 @@ const ParticipantTile = React.memo(({
     );
 });
 
+const renderJudgeLayout = (
+    judgeParticipants: DyteParticipant[],
+    lastActiveSpeaker: string,
+    meeting: any
+) => {
+    if (judgeParticipants.length === 1) {
+        return (
+            <div
+                style={{
+                    width: '33.33%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '10px',
+                    minHeight: '100%',
+                }}
+            >
+                <div style={{ width: '100%', flex: 1 }}>
+                    <ParticipantTile
+                        participant={judgeParticipants[0]}
+                        presetName={judgeParticipants[0].presetName as PresetName}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === judgeParticipants[0].id}
+                    />
+                </div>
+                <div style={{ marginTop: '20px' }}>
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        style={{
+                            maxWidth: '150px',
+                            maxHeight: '150px',
+                            objectFit: 'contain',
+                        }}
+                    />
+                </div>
+            </div>
+        );
+    } else if (judgeParticipants.length === 2) {
+        return (
+            <div
+                style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    padding: '10px',
+                    zIndex: 1,
+                    pointerEvents: 'none',
+                }}
+            >
+                <div style={{
+                    width: '100%',
+                    height: '25vh',
+                    pointerEvents: 'auto'
+                }}>
+                    <ParticipantTile
+                        participant={judgeParticipants[0]}
+                        presetName={judgeParticipants[0].presetName as PresetName}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === judgeParticipants[0].id}
+                    />
+                </div>
+
+                <div style={{
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    pointerEvents: 'auto'
+                }}>
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        style={{
+                            maxWidth: '150px',
+                            maxHeight: '150px',
+                            objectFit: 'contain',
+                        }}
+                    />
+                </div>
+
+                <div style={{
+                    width: '100%',
+                    height: '25vh',
+                    pointerEvents: 'auto'
+                }}>
+                    <ParticipantTile
+                        participant={judgeParticipants[1]}
+                        presetName={judgeParticipants[1].presetName as PresetName}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === judgeParticipants[1].id}
+                    />
+                </div>
+            </div>
+        );
+    }
+    return null;
+};
+
+const renderParticipantsLayout = (
+    leftColumnParticipants: DyteParticipant[],
+    rightColumnParticipants: DyteParticipant[],
+    judgeCount: number,
+    lastActiveSpeaker: string,
+    meeting: any
+) => {
+    const participantStyle = judgeCount === 2 ? {
+        width: '50%',
+        padding: '10px',
+        height: '100%',
+        zIndex: 2,
+    } : {
+        width: '33.33%',
+        padding: '10px',
+    };
+
+    return (
+        <>
+            <div
+                style={{
+                    ...participantStyle,
+                    display: 'grid',
+                    gridTemplateRows: `repeat(${leftColumnParticipants.length}, 1fr)`,
+                    gap: '10px',
+                }}
+            >
+                {leftColumnParticipants.map((participant) => (
+                    <ParticipantTile
+                        key={participant.id}
+                        participant={participant}
+                        presetName={participant.presetName as PresetName}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === participant.id}
+                    />
+                ))}
+            </div>
+
+            {judgeCount === 2 && <div style={{ width: '0%' }} />}
+
+            <div
+                style={{
+                    ...participantStyle,
+                    display: 'grid',
+                    gridTemplateRows: `repeat(${rightColumnParticipants.length}, 1fr)`,
+                    gap: '10px',
+                }}
+            >
+                {rightColumnParticipants.map((participant) => (
+                    <ParticipantTile
+                        key={participant.id}
+                        participant={participant}
+                        presetName={participant.presetName as PresetName}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === participant.id}
+                    />
+                ))}
+            </div>
+        </>
+    );
+};
+
 export default function RecordingView() {
     const { meeting } = useDyteMeeting();
     const [participants, setParticipants] = useState<DyteParticipant[]>([]);
 
-    // Get active speaker using useDyteSelector
     const lastActiveSpeaker = useDyteSelector(
         (meeting) => meeting.participants.lastActiveSpeaker
     );
@@ -162,7 +316,6 @@ export default function RecordingView() {
             debouncedSetParticipants((prev) => prev.filter((p) => p.id !== participant.id));
         };
 
-        // Subscribe to activeSpeaker events
         const handleActiveSpeaker = ({ peerId, volume }: { peerId: string, volume: number }) => {
             console.log(`Active speaker: ${peerId} with volume ${volume}`);
         };
@@ -203,32 +356,6 @@ export default function RecordingView() {
         }
     });
 
-    const renderParticipantsColumn = (
-        participants: DyteParticipant[],
-        columnStyle: React.CSSProperties
-    ) => {
-        return (
-            <div
-                style={{
-                    ...columnStyle,
-                    display: 'grid',
-                    gridTemplateRows: `repeat(${participants.length}, 1fr)`,
-                    gap: '10px',
-                }}
-            >
-                {participants.map((participant) => (
-                    <ParticipantTile
-                        key={participant.id}
-                        participant={participant}
-                        presetName={participant.presetName as PresetName}
-                        meeting={meeting}
-                        isActiveSpeaker={lastActiveSpeaker === participant.id}
-                    />
-                ))}
-            </div>
-        );
-    };
-
     return (
         <main
             style={{
@@ -249,45 +376,14 @@ export default function RecordingView() {
                     overflow: 'hidden',
                 }}
             >
-                {renderParticipantsColumn(leftColumnParticipants, {
-                    width: '33.33%',
-                    padding: '10px',
-                })}
-
-                <div
-                    style={{
-                        width: '33.33%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        padding: '10px',
-                    }}
-                >
-                    {renderParticipantsColumn(judgeParticipants, {
-                        width: '100%',
-                    })}
-                    <div
-                        style={{
-                            marginTop: '20px',
-                        }}
-                    >
-                        <img
-                            src={logo}
-                            alt="Logo"
-                            style={{
-                                maxWidth: '150px',
-                                maxHeight: '150px',
-                                objectFit: 'contain',
-                            }}
-                        />
-                    </div>
-                </div>
-
-                {renderParticipantsColumn(rightColumnParticipants, {
-                    width: '33.33%',
-                    padding: '10px',
-                })}
+                {renderParticipantsLayout(
+                    leftColumnParticipants,
+                    rightColumnParticipants,
+                    judgeParticipants.length,
+                    lastActiveSpeaker,
+                    meeting
+                )}
+                {renderJudgeLayout(judgeParticipants, lastActiveSpeaker, meeting)}
             </div>
             <DyteParticipantsAudio meeting={meeting} />
         </main>

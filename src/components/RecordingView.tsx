@@ -73,7 +73,7 @@ const ParticipantTile = React.memo(({
                 style={{
                     position: 'relative',
                     width: '100%',
-                    paddingTop: '65%', // Reduced from 75% to prevent overflow
+                    paddingTop: '56.25%', // 16:9 aspect ratio
                     border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 0.8)' : 'none',
                     boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none',
                     borderRadius: '16px',

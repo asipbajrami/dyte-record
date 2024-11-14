@@ -277,8 +277,8 @@ export default function RecordingView() {
                 </div>
 
                 {renderParticipantsColumn(rightColumnParticipants, {
-                    width: '33.33%',
-                    minWidth: '33.33%',
+                    width: '33%',
+                    minWidth: '33%',
                 })}
             </div>
             <DyteParticipantsAudio meeting={meeting} />

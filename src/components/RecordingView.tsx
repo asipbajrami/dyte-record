@@ -15,17 +15,13 @@ const NEGATIVE = 'negative';
 const JUDGE = 'judge';
 const SOLO = 'solo';
 
-const ASPECT_RATIO = 16/9;
-const GAP_BETWEEN_TILES = '10px';
-const ACTIVE_SPEAKER_BORDER_RADIUS = '12px';
-
 type PresetName = typeof AFFIRMATIVE | typeof NEGATIVE | typeof JUDGE | typeof SOLO;
 
 const presetColors: { [key in PresetName]: string } = {
-    [AFFIRMATIVE]: '#043B6D',
-    [NEGATIVE]: '#641316',
-    [JUDGE]: '#0D0B0E',
-    [SOLO]: '#471a55',
+    [AFFIRMATIVE]: '#043B6D', // Blue
+    [NEGATIVE]: '#641316',    // Red
+    [JUDGE]: '#0D0B0E',      // Black
+    [SOLO]: '#471a55',       // Purple
 };
 
 const ParticipantTile = React.memo(({
@@ -33,28 +29,36 @@ const ParticipantTile = React.memo(({
                                         presetName,
                                         meeting,
                                         isActiveSpeaker,
-                                        style,
                                     }: {
     participant: DyteParticipant;
     presetName: PresetName;
     meeting: any;
     isActiveSpeaker: boolean;
-    style?: React.CSSProperties;
 }) => {
     const [isVideoReady, setIsVideoReady] = useState(false);
 
     useEffect(() => {
+        console.log(`Participant ${participant.name} (${participant.id}): Video track status:`, participant.videoEnabled);
+
         const checkVideoTrack = () => {
             if (participant.videoEnabled && participant.videoTrack) {
+                console.log(`Participant ${participant.name} (${participant.id}): Video track ready`);
                 setIsVideoReady(true);
             } else {
+                console.log(`Participant ${participant.name} (${participant.id}): Video track not ready`);
                 setIsVideoReady(false);
             }
         };
 
         checkVideoTrack();
-        const videoUpdateListener = () => checkVideoTrack();
+
+        const videoUpdateListener = () => {
+            console.log(`Participant ${participant.name} (${participant.id}): Video update event`);
+            checkVideoTrack();
+        };
+
         participant.on('videoUpdate', videoUpdateListener);
+
         return () => {
             participant.off('videoUpdate', videoUpdateListener);
         };
@@ -62,49 +66,37 @@ const ParticipantTile = React.memo(({
 
     return (
         <div
+            key={participant.id}
             style={{
-                position: 'relative',
                 width: '100%',
-                height: '0',
-                paddingBottom: `${(1/ASPECT_RATIO) * 100}%`,
-                borderRadius: ACTIVE_SPEAKER_BORDER_RADIUS,
+                height: '100%',
+                position: 'relative',
+                borderRadius: '8px',
                 overflow: 'hidden',
-                border: '3px solid',
+                border: '2px solid',
                 borderColor: isActiveSpeaker ? 'white' : 'transparent',
                 transition: 'border-color 0.3s ease-in-out',
-                ...style,
             }}
         >
-            <div
+            <DyteParticipantTile
+                participant={participant}
+                meeting={meeting}
                 style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
                     width: '100%',
                     height: '100%',
-                    borderRadius: ACTIVE_SPEAKER_BORDER_RADIUS,
-                    overflow: 'hidden',
+                    transition: 'all 0.3s ease-in-out',
                 }}
             >
-                <DyteParticipantTile
+                <DyteNameTag
                     participant={participant}
-                    meeting={meeting}
                     style={{
-                        width: '100%',
-                        height: '100%',
+                        backgroundColor: presetColors[presetName],
+                        color: 'white',
                     }}
                 >
-                    <DyteNameTag
-                        participant={participant}
-                        style={{
-                            backgroundColor: presetColors[presetName],
-                            color: 'white',
-                        }}
-                    >
-                        <DyteAudioVisualizer participant={participant} slot="start" />
-                    </DyteNameTag>
-                </DyteParticipantTile>
-            </div>
+                    <DyteAudioVisualizer participant={participant} slot="start" />
+                </DyteNameTag>
+            </DyteParticipantTile>
             {!isVideoReady && (
                 <div style={{
                     position: 'absolute',
@@ -117,7 +109,6 @@ const ParticipantTile = React.memo(({
                     alignItems: 'center',
                     backgroundColor: 'rgba(0, 0, 0, 0.5)',
                     color: 'white',
-                    borderRadius: ACTIVE_SPEAKER_BORDER_RADIUS,
                 }}>
                     Loading...
                 </div>
@@ -125,216 +116,138 @@ const ParticipantTile = React.memo(({
         </div>
     );
 });
-const Logo = () => (
-    <img
-        src={logo}
-        alt="Logo"
-        style={{
-            width: '100px',
-            height: '100px',
-            objectFit: 'contain',
-        }}
-    />
-);
 
-const renderOneOnOneLayout = (
-    negativeParticipant: DyteParticipant,
-    affirmativeParticipant: DyteParticipant,
-    judgeParticipant: DyteParticipant,
-    lastActiveSpeaker: string,
-    meeting: any
-) => {
-    return (
-        <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            height: '100%',
-            padding: '20px',
-            gap: '20px',
-            maxWidth: '1920px',
-            margin: '0 auto',
-        }}>
-            {/* Top row for negative and affirmative - taking 70% of vertical space */}
-            <div style={{
-                display: 'flex',
-                gap: '20px',
-                height: '65%',
-            }}>
-                <div style={{ flex: 1 }}>
-                    <ParticipantTile
-                        participant={negativeParticipant}
-                        presetName={NEGATIVE}
-                        meeting={meeting}
-                        isActiveSpeaker={lastActiveSpeaker === negativeParticipant.id}
-                    />
-                </div>
-                <div style={{ flex: 1 }}>
-                    <ParticipantTile
-                        participant={affirmativeParticipant}
-                        presetName={AFFIRMATIVE}
-                        meeting={meeting}
-                        isActiveSpeaker={lastActiveSpeaker === affirmativeParticipant.id}
-                    />
-                </div>
-            </div>
-
-            {/* Bottom container for judge and logo - taking 30% of vertical space */}
-            <div style={{
-                height: '30%',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '10px',
-            }}>
-                <div style={{ width: '35%' }}>
-                    <ParticipantTile
-                        participant={judgeParticipant}
-                        presetName={JUDGE}
-                        meeting={meeting}
-                        isActiveSpeaker={lastActiveSpeaker === judgeParticipant.id}
-                    />
-                </div>
-                <div style={{
-                    marginTop: '10px',
-                    height: '60px', // Fixed height for logo container
-                    display: 'flex',
-                    alignItems: 'center',
-                }}>
-                    <Logo />
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const renderTwoJudgesLayout = (
-    leftColumnParticipants: DyteParticipant[],
-    rightColumnParticipants: DyteParticipant[],
+const renderJudgeLayout = (
     judgeParticipants: DyteParticipant[],
     lastActiveSpeaker: string,
     meeting: any
 ) => {
-    return (
-        <div style={{
-            position: 'relative',
-            height: '100%',
-            padding: '20px',
-        }}>
-            {/* Top Judge - 25% of viewport height */}
-            <div style={{
-                position: 'absolute',
-                top: '20px',
-                left: '25%',
-                right: '25%',
-                height: '22vh',
-                zIndex: 2,
-            }}>
-                <ParticipantTile
-                    participant={judgeParticipants[0]}
-                    presetName={JUDGE}
-                    meeting={meeting}
-                    isActiveSpeaker={lastActiveSpeaker === judgeParticipants[0].id}
-                />
-            </div>
-
-            {/* Main Content */}
-            <div style={{
-                display: 'flex',
-                height: '100%',
-                paddingTop: '25vh',
-                paddingBottom: '25vh',
-                gap: '20px',
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}>
-                {/* Left Column */}
-                <div style={{
-                    width: '35%',
+    if (judgeParticipants.length === 1) {
+        return (
+            <div
+                style={{
+                    width: '33.33%',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '10px',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    padding: '10px',
+                    minHeight: '100%',
+                }}
+            >
+                <div style={{ width: '100%', flex: 1 }}>
+                    <ParticipantTile
+                        participant={judgeParticipants[0]}
+                        presetName={judgeParticipants[0].presetName as PresetName}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === judgeParticipants[0].id}
+                    />
+                </div>
+                <div style={{ marginTop: '20px' }}>
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        style={{
+                            maxWidth: '150px',
+                            maxHeight: '150px',
+                            objectFit: 'contain',
+                        }}
+                    />
+                </div>
+            </div>
+        );
+    } else if (judgeParticipants.length === 2) {
+        return (
+            <div
+                style={{
+                    position: 'absolute',
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    padding: '10px',
+                    zIndex: 1,
+                    pointerEvents: 'none',
+                }}
+            >
+                <div style={{
+                    width: '100%',
+                    height: '25vh',
+                    pointerEvents: 'auto'
                 }}>
-                    {leftColumnParticipants.map((participant) => (
-                        <ParticipantTile
-                            key={participant.id}
-                            participant={participant}
-                            presetName={participant.presetName as PresetName}
-                            meeting={meeting}
-                            isActiveSpeaker={lastActiveSpeaker === participant.id}
-                        />
-                    ))}
+                    <ParticipantTile
+                        participant={judgeParticipants[0]}
+                        presetName={judgeParticipants[0].presetName as PresetName}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === judgeParticipants[0].id}
+                    />
                 </div>
 
-                {/* Center Logo */}
                 <div style={{
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    padding: '0 20px',
+                    pointerEvents: 'auto'
                 }}>
-                    <Logo />
+                    <img
+                        src={logo}
+                        alt="Logo"
+                        style={{
+                            maxWidth: '150px',
+                            maxHeight: '150px',
+                            objectFit: 'contain',
+                        }}
+                    />
                 </div>
 
-                {/* Right Column */}
                 <div style={{
-                    width: '35%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '10px',
+                    width: '100%',
+                    height: '25vh',
+                    pointerEvents: 'auto'
                 }}>
-                    {rightColumnParticipants.map((participant) => (
-                        <ParticipantTile
-                            key={participant.id}
-                            participant={participant}
-                            presetName={participant.presetName as PresetName}
-                            meeting={meeting}
-                            isActiveSpeaker={lastActiveSpeaker === participant.id}
-                        />
-                    ))}
+                    <ParticipantTile
+                        participant={judgeParticipants[1]}
+                        presetName={judgeParticipants[1].presetName as PresetName}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === judgeParticipants[1].id}
+                    />
                 </div>
             </div>
-
-            {/* Bottom Judge - 25% of viewport height */}
-            <div style={{
-                position: 'absolute',
-                bottom: '20px',
-                left: '25%',
-                right: '25%',
-                height: '22vh',
-                zIndex: 2,
-            }}>
-                <ParticipantTile
-                    participant={judgeParticipants[1]}
-                    presetName={JUDGE}
-                    meeting={meeting}
-                    isActiveSpeaker={lastActiveSpeaker === judgeParticipants[1].id}
-                />
-            </div>
-        </div>
-    );
+        );
+    }
+    return null;
 };
-const renderDefaultLayout = (
+
+const renderParticipantsLayout = (
     leftColumnParticipants: DyteParticipant[],
     rightColumnParticipants: DyteParticipant[],
-    judgeParticipants: DyteParticipant[],
+    judgeCount: number,
     lastActiveSpeaker: string,
     meeting: any
 ) => {
+    const participantStyle = judgeCount === 2 ? {
+        width: '50%',
+        padding: '10px',
+        height: '100%',
+        zIndex: 2,
+    } : {
+        width: '33.33%',
+        padding: '10px',
+    };
+
     return (
-        <div style={{
-            display: 'flex',
-            height: '100%',
-            padding: '20px',
-            gap: '20px',
-            maxWidth: '1920px',
-            margin: '0 auto',
-        }}>
-            <div style={{
-                width: '33.33%',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: GAP_BETWEEN_TILES,
-            }}>
+        <>
+            <div
+                style={{
+                    ...participantStyle,
+                    display: 'grid',
+                    gridTemplateRows: `repeat(${leftColumnParticipants.length}, 1fr)`,
+                    gap: '10px',
+                }}
+            >
                 {leftColumnParticipants.map((participant) => (
                     <ParticipantTile
                         key={participant.id}
@@ -346,38 +259,16 @@ const renderDefaultLayout = (
                 ))}
             </div>
 
-            <div style={{
-                width: '33.33%',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: GAP_BETWEEN_TILES,
-            }}>
-                {judgeParticipants.map((participant) => (
-                    <div key={participant.id} style={{ marginBottom: GAP_BETWEEN_TILES }}>
-                        <ParticipantTile
-                            participant={participant}
-                            presetName={JUDGE}
-                            meeting={meeting}
-                            isActiveSpeaker={lastActiveSpeaker === participant.id}
-                        />
-                    </div>
-                ))}
-                <div style={{
-                    marginTop: 'auto',
-                    marginBottom: '20px',
-                    display: 'flex',
-                    justifyContent: 'center',
-                }}>
-                    <Logo />
-                </div>
-            </div>
+            {judgeCount === 2 && <div style={{ width: '0%' }} />}
 
-            <div style={{
-                width: '33.33%',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: GAP_BETWEEN_TILES,
-            }}>
+            <div
+                style={{
+                    ...participantStyle,
+                    display: 'grid',
+                    gridTemplateRows: `repeat(${rightColumnParticipants.length}, 1fr)`,
+                    gap: '10px',
+                }}
+            >
                 {rightColumnParticipants.map((participant) => (
                     <ParticipantTile
                         key={participant.id}
@@ -388,7 +279,7 @@ const renderDefaultLayout = (
                     />
                 ))}
             </div>
-        </div>
+        </>
     );
 };
 
@@ -412,37 +303,42 @@ export default function RecordingView() {
     );
 
     useEffect(() => {
-        const updateParticipants = () => {
-            debouncedSetParticipants(() => joinedParticipants);
-        };
-
-        updateParticipants();
+        console.log('Joined participants:', joinedParticipants);
+        debouncedSetParticipants(() => joinedParticipants);
 
         const handleParticipantJoin = (participant: DyteParticipant) => {
+            console.log('Participant joined:', participant);
             debouncedSetParticipants((prev) => [...prev, participant]);
         };
 
         const handleParticipantLeave = (participant: DyteParticipant) => {
+            console.log('Participant left:', participant);
             debouncedSetParticipants((prev) => prev.filter((p) => p.id !== participant.id));
         };
 
+        const handleActiveSpeaker = ({ peerId, volume }: { peerId: string, volume: number }) => {
+            console.log(`Active speaker: ${peerId} with volume ${volume}`);
+        };
+
+        meeting.participants.on('activeSpeaker', handleActiveSpeaker);
         meeting.participants.joined.on('participantJoined', handleParticipantJoin);
         meeting.participants.joined.on('participantLeft', handleParticipantLeave);
 
         return () => {
             meeting.participants.joined.off('participantJoined', handleParticipantJoin);
             meeting.participants.joined.off('participantLeft', handleParticipantLeave);
+            meeting.participants.off('activeSpeaker', handleActiveSpeaker);
         };
     }, [meeting, joinedParticipants, debouncedSetParticipants]);
 
-    const getParticipantsByPreset = useCallback((
+    const getParticipantsByPreset = (
         presetNames: PresetName | PresetName[]
     ): DyteParticipant[] => {
         const names = Array.isArray(presetNames) ? presetNames : [presetNames];
         return participants.filter(
             (p) => p.presetName && names.includes(p.presetName as PresetName)
         );
-    }, [participants]);
+    };
 
     const negativeParticipants = getParticipantsByPreset(NEGATIVE);
     const affirmativeParticipants = getParticipantsByPreset(AFFIRMATIVE);
@@ -460,46 +356,35 @@ export default function RecordingView() {
         }
     });
 
-    const isOneOnOne =
-        negativeParticipants.length === 1 &&
-        affirmativeParticipants.length === 1 &&
-        judgeParticipants.length === 1;
-
-    const hasTwoJudges = judgeParticipants.length === 2;
-
     return (
-        <main style={{
-            width: '100vw',
-            height: '100vh',
-            backgroundColor: '#000',
-            color: 'white',
-            overflow: 'hidden',
-        }}>
-            {isOneOnOne ? (
-                renderOneOnOneLayout(
-                    negativeParticipants[0],
-                    affirmativeParticipants[0],
-                    judgeParticipants[0],
-                    lastActiveSpeaker,
-                    meeting
-                )
-            ) : hasTwoJudges ? (
-                renderTwoJudgesLayout(
+        <main
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100vw',
+                height: '100vh',
+                backgroundColor: '#000',
+                color: 'white',
+                overflow: 'hidden',
+            }}
+        >
+            <div
+                style={{
+                    display: 'flex',
+                    flex: 1,
+                    position: 'relative',
+                    overflow: 'hidden',
+                }}
+            >
+                {renderParticipantsLayout(
                     leftColumnParticipants,
                     rightColumnParticipants,
-                    judgeParticipants,
+                    judgeParticipants.length,
                     lastActiveSpeaker,
                     meeting
-                )
-            ) : (
-                renderDefaultLayout(
-                    leftColumnParticipants,
-                    rightColumnParticipants,
-                    judgeParticipants,
-                    lastActiveSpeaker,
-                    meeting
-                )
-            )}
+                )}
+                {renderJudgeLayout(judgeParticipants, lastActiveSpeaker, meeting)}
+            </div>
             <DyteParticipantsAudio meeting={meeting} />
         </main>
     );

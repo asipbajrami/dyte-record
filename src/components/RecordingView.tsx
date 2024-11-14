@@ -63,11 +63,10 @@ const ParticipantTile = React.memo(({
         <div
             key={participant.id}
             style={{
-                width: '100%',
-                maxWidth: '97%', // Reduce the max-width to 98% to prevent the border from being cut off
-                position: 'relative',
-                borderRadius: '16px',
-                overflow: 'hidden',
+                flex: '0 0 auto', // Ensure the tiles don't grow or shrink beyond their content size
+                width: '33.33%', // Set the initial width to 1/3 of the container
+                padding: '2px', // Add some padding around the tiles
+                boxSizing: 'border-box', // Include the padding in the width calculation
             }}
         >
             <div
@@ -76,9 +75,9 @@ const ParticipantTile = React.memo(({
                     width: '100%',
                     paddingTop: '56.25%', // 16:9 aspect ratio
                     border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 0.8)' : 'none',
+                    boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none',
                     borderRadius: '16px',
                     overflow: 'hidden',
-                    marginBottom: '2px', // Small margin between participants
                 }}
             >
                 <DyteParticipantTile
@@ -101,7 +100,7 @@ const ParticipantTile = React.memo(({
                             color: 'white',
                         }}
                     >
-                        <DyteAudioVisualizer participant={participant} slot="start"/>
+                        <DyteAudioVisualizer participant={participant} slot="start" />
                     </DyteNameTag>
                 </DyteParticipantTile>
             </div>
@@ -126,7 +125,7 @@ const ParticipantTile = React.memo(({
 });
 
 export default function RecordingView() {
-    const {meeting} = useDyteMeeting();
+    const { meeting } = useDyteMeeting();
     const [participants, setParticipants] = useState<DyteParticipant[]>([]);
 
     const lastActiveSpeaker = useDyteSelector(

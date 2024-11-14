@@ -38,10 +38,14 @@ const ParticipantTile = React.memo(({
     const [isVideoReady, setIsVideoReady] = useState(false);
 
     useEffect(() => {
+        console.log(`Participant ${participant.name} (${participant.id}): Video track status:`, participant.videoEnabled);
+
         const checkVideoTrack = () => {
             if (participant.videoEnabled && participant.videoTrack) {
+                console.log(`Participant ${participant.name} (${participant.id}): Video track ready`);
                 setIsVideoReady(true);
             } else {
+                console.log(`Participant ${participant.name} (${participant.id}): Video track not ready`);
                 setIsVideoReady(false);
             }
         };
@@ -49,6 +53,7 @@ const ParticipantTile = React.memo(({
         checkVideoTrack();
 
         const videoUpdateListener = () => {
+            console.log(`Participant ${participant.name} (${participant.id}): Video update event`);
             checkVideoTrack();
         };
 
@@ -65,20 +70,18 @@ const ParticipantTile = React.memo(({
             style={{
                 width: '100%',
                 position: 'relative',
-                borderRadius: '16px',
+                borderRadius: '12px', // Slightly increased border radius
                 overflow: 'hidden',
-                margin: '2px 0',
+                border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 0.8)' : '2px solid transparent', // Enhanced active speaker border
+                boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none', // Added subtle glow for active speaker
+                transition: 'all 0.3s ease-in-out',
             }}
         >
             <div
                 style={{
                     position: 'relative',
                     width: '100%',
-                    paddingTop: '75%', // 4:3 aspect ratio
-                    border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 0.8)' : 'none',
-                    boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none',
-                    borderRadius: '16px',
-                    overflow: 'hidden',
+                    paddingTop: '56.25%', // 16:9 aspect ratio
                 }}
             >
                 <DyteParticipantTile
@@ -129,6 +132,7 @@ export default function RecordingView() {
     const { meeting } = useDyteMeeting();
     const [participants, setParticipants] = useState<DyteParticipant[]>([]);
 
+    // Get active speaker using useDyteSelector
     const lastActiveSpeaker = useDyteSelector(
         (meeting) => meeting.participants.lastActiveSpeaker
     );
@@ -145,22 +149,32 @@ export default function RecordingView() {
     );
 
     useEffect(() => {
+        console.log('Joined participants:', joinedParticipants);
         debouncedSetParticipants(() => joinedParticipants);
 
         const handleParticipantJoin = (participant: DyteParticipant) => {
+            console.log('Participant joined:', participant);
             debouncedSetParticipants((prev) => [...prev, participant]);
         };
 
         const handleParticipantLeave = (participant: DyteParticipant) => {
+            console.log('Participant left:', participant);
             debouncedSetParticipants((prev) => prev.filter((p) => p.id !== participant.id));
         };
 
+        // Subscribe to activeSpeaker events
+        const handleActiveSpeaker = ({ peerId, volume }: { peerId: string, volume: number }) => {
+            console.log(`Active speaker: ${peerId} with volume ${volume}`);
+        };
+
+        meeting.participants.on('activeSpeaker', handleActiveSpeaker);
         meeting.participants.joined.on('participantJoined', handleParticipantJoin);
         meeting.participants.joined.on('participantLeft', handleParticipantLeave);
 
         return () => {
             meeting.participants.joined.off('participantJoined', handleParticipantJoin);
             meeting.participants.joined.off('participantLeft', handleParticipantLeave);
+            meeting.participants.off('activeSpeaker', handleActiveSpeaker);
         };
     }, [meeting, joinedParticipants, debouncedSetParticipants]);
 
@@ -193,6 +207,9 @@ export default function RecordingView() {
         participants: DyteParticipant[],
         columnStyle: React.CSSProperties
     ) => {
+        // Calculate height for each participant
+        const participantHeight = participants.length === 1 ? '100%' : '49%';
+
         return (
             <div
                 style={{
@@ -201,16 +218,24 @@ export default function RecordingView() {
                     flexDirection: 'column',
                     gap: '4px',
                     padding: '4px',
+                    height: '100%',
                 }}
             >
                 {participants.map((participant) => (
-                    <ParticipantTile
+                    <div
                         key={participant.id}
-                        participant={participant}
-                        presetName={participant.presetName as PresetName}
-                        meeting={meeting}
-                        isActiveSpeaker={lastActiveSpeaker === participant.id}
-                    />
+                        style={{
+                            height: participantHeight,
+                            minHeight: participants.length === 1 ? '100%' : '300px', // Minimum height for participants
+                        }}
+                    >
+                        <ParticipantTile
+                            participant={participant}
+                            presetName={participant.presetName as PresetName}
+                            meeting={meeting}
+                            isActiveSpeaker={lastActiveSpeaker === participant.id}
+                        />
+                    </div>
                 ))}
             </div>
         );
@@ -248,16 +273,17 @@ export default function RecordingView() {
                         minWidth: '33.33%',
                         display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: 'flex-start',
+                        justifyContent: 'flex-start', // Changed to start from top
                         padding: '4px',
                     }}
                 >
                     {renderParticipantsColumn(judgeParticipants, {
                         width: '100%',
+                        flex: '1 1 auto',
                     })}
                     <div
                         style={{
-                            marginTop: '8px',
+                            marginTop: '12px',
                             display: 'flex',
                             justifyContent: 'center',
                         }}

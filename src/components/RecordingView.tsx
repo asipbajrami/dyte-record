@@ -70,7 +70,7 @@ const ParticipantTile = React.memo(({
             style={{
                 width: '100%',
                 position: 'relative',
-                borderRadius: '12px', // Slightly increased border radius
+                borderRadius: '16px', // Slightly increased border radius
                 overflow: 'hidden',
                 border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 0.8)' : '2px solid transparent', // Enhanced active speaker border
                 boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none', // Added subtle glow for active speaker
@@ -216,8 +216,8 @@ export default function RecordingView() {
                     ...columnStyle,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '4px',
-                    padding: '4px',
+                    gap: '6px',
+                    padding: '6px',
                     height: '100%',
                 }}
             >
@@ -259,7 +259,7 @@ export default function RecordingView() {
                     flex: 1,
                     position: 'relative',
                     overflow: 'hidden',
-                    gap: '4px',
+                    gap: '6px',
                 }}
             >
                 {renderParticipantsColumn(leftColumnParticipants, {
@@ -274,7 +274,7 @@ export default function RecordingView() {
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'flex-start', // Changed to start from top
-                        padding: '4px',
+                        padding: '6px',
                     }}
                 >
                     {renderParticipantsColumn(judgeParticipants, {

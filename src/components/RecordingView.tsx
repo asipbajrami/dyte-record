@@ -207,24 +207,35 @@ export default function RecordingView() {
         participants: DyteParticipant[],
         columnStyle: React.CSSProperties
     ) => {
+        // Calculate height for each participant
+        const participantHeight = participants.length === 1 ? '100%' : '49%';
+
         return (
             <div
                 style={{
                     ...columnStyle,
-                    display: 'grid',
-                    gridTemplateRows: `repeat(${participants.length}, 1fr)`,
-                    gap: '8px', // Slightly reduced gap to give more space to participants
-                    padding: '8px', // Reduced padding to give more space to participants
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '8px',
+                    padding: '8px',
+                    height: '100%',
                 }}
             >
                 {participants.map((participant) => (
-                    <ParticipantTile
+                    <div
                         key={participant.id}
-                        participant={participant}
-                        presetName={participant.presetName as PresetName}
-                        meeting={meeting}
-                        isActiveSpeaker={lastActiveSpeaker === participant.id}
-                    />
+                        style={{
+                            height: participantHeight,
+                            minHeight: participants.length === 1 ? '100%' : '300px', // Minimum height for participants
+                        }}
+                    >
+                        <ParticipantTile
+                            participant={participant}
+                            presetName={participant.presetName as PresetName}
+                            meeting={meeting}
+                            isActiveSpeaker={lastActiveSpeaker === participant.id}
+                        />
+                    </div>
                 ))}
             </div>
         );
@@ -248,37 +259,41 @@ export default function RecordingView() {
                     flex: 1,
                     position: 'relative',
                     overflow: 'hidden',
-                    gap: '8px', // Added small gap between columns
+                    gap: '8px',
                 }}
             >
                 {renderParticipantsColumn(leftColumnParticipants, {
                     width: '33.33%',
+                    minWidth: '33.33%',
                 })}
 
                 <div
                     style={{
                         width: '33.33%',
+                        minWidth: '33.33%',
                         display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        justifyContent: 'flex-start', // Changed to start from top
                         padding: '8px',
                     }}
                 >
                     {renderParticipantsColumn(judgeParticipants, {
                         width: '100%',
+                        flex: '1 1 auto',
                     })}
                     <div
                         style={{
-                            marginTop: '16px',
+                            marginTop: '12px',
+                            display: 'flex',
+                            justifyContent: 'center',
                         }}
                     >
                         <img
                             src={logo}
                             alt="Logo"
                             style={{
-                                maxWidth: '150px',
-                                maxHeight: '150px',
+                                width: '120px',
+                                height: '120px',
                                 objectFit: 'contain',
                             }}
                         />
@@ -287,6 +302,7 @@ export default function RecordingView() {
 
                 {renderParticipantsColumn(rightColumnParticipants, {
                     width: '33.33%',
+                    minWidth: '33.33%',
                 })}
             </div>
             <DyteParticipantsAudio meeting={meeting} />

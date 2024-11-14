@@ -63,7 +63,7 @@ const ParticipantTile = React.memo(({
         <div
             key={participant.id}
             style={{
-                width: '100%',
+                width: '90%', // Reduced width to 90%
                 position: 'relative',
                 borderRadius: '16px',
                 overflow: 'hidden',
@@ -200,7 +200,7 @@ export default function RecordingView() {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '2px', // Minimal gap between participants
-                    padding: '8px', // Minimal padding
+                    padding: '2px', // Minimal padding
                     height: '100%',
                     overflow: 'hidden', // Prevent overflow
                 }}
@@ -277,8 +277,8 @@ export default function RecordingView() {
                 </div>
 
                 {renderParticipantsColumn(rightColumnParticipants, {
-                    width: '33%',
-                    minWidth: '33%',
+                    width: '33.33%',
+                    minWidth: '33.33%',
                 })}
             </div>
             <DyteParticipantsAudio meeting={meeting} />

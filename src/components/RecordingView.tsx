@@ -63,7 +63,8 @@ const ParticipantTile = React.memo(({
         <div
             key={participant.id}
             style={{
-                width: '98%', // Reduced width to 98%
+                width: '100%',
+                maxWidth: '98%', // Reduce the max-width to 98% to prevent the border from being cut off
                 position: 'relative',
                 borderRadius: '16px',
                 overflow: 'hidden',
@@ -101,7 +102,7 @@ const ParticipantTile = React.memo(({
                             color: 'white',
                         }}
                     >
-                        <DyteAudioVisualizer participant={participant} slot="start" />
+                        <DyteAudioVisualizer participant={participant} slot="start"/>
                     </DyteNameTag>
                 </DyteParticipantTile>
             </div>
@@ -126,7 +127,7 @@ const ParticipantTile = React.memo(({
 });
 
 export default function RecordingView() {
-    const { meeting } = useDyteMeeting();
+    const {meeting} = useDyteMeeting();
     const [participants, setParticipants] = useState<DyteParticipant[]>([]);
 
     const lastActiveSpeaker = useDyteSelector(

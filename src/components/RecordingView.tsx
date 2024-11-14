@@ -64,7 +64,7 @@ const ParticipantTile = React.memo(({
             key={participant.id}
             style={{
                 flex: '0 0 auto', // Ensure the tiles don't grow or shrink beyond their content size
-                width: '33.33%', // Set the initial width to 1/3 of the container
+                width: '90%', // Set the initial width to 1/3 of the container
                 padding: '2px', // Add some padding around the tiles
                 boxSizing: 'border-box', // Include the padding in the width calculation
             }}
@@ -232,7 +232,8 @@ export default function RecordingView() {
             <div
                 style={{
                     display: 'flex',
-                    flex: 1,
+                    flexWrap: 'wrap', // Allow the tiles to wrap to the next line if needed
+                    flex: '1 1 auto', // Allow the container to grow and shrink as needed
                     position: 'relative',
                     overflow: 'hidden',
                     gap: '2px', // Minimal gap between columns

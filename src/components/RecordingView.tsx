@@ -65,19 +65,19 @@ const ParticipantTile = React.memo(({
             style={{
                 width: '100%',
                 position: 'relative',
-                borderRadius: '16px', // Slightly increased border radius
+                borderRadius: '16px',
                 overflow: 'hidden',
-                height: '100%',
+                margin: '2px 0',
             }}
         >
             <div
                 style={{
                     position: 'relative',
                     width: '100%',
-                    height: '100%',
+                    paddingTop: '75%', // 4:3 aspect ratio
                     border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 0.8)' : 'none',
                     boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none',
-                    borderRadius: '16px', // Matching border radius
+                    borderRadius: '16px',
                     overflow: 'hidden',
                 }}
             >
@@ -193,34 +193,24 @@ export default function RecordingView() {
         participants: DyteParticipant[],
         columnStyle: React.CSSProperties
     ) => {
-        const participantHeight = participants.length === 1 ? '100%' : '48%'; // Slightly reduced from 49% to 48%
-
         return (
             <div
                 style={{
                     ...columnStyle,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '2px', // Reduced gap from 8px to 4px
-                    padding: '2px', // Reduced padding from 8px to 4px
-                    height: '100%',
+                    gap: '4px',
+                    padding: '4px',
                 }}
             >
                 {participants.map((participant) => (
-                    <div
+                    <ParticipantTile
                         key={participant.id}
-                        style={{
-                            height: participantHeight,
-                            minHeight: participants.length === 1 ? '100%' : '280px', // Adjusted minimum height
-                        }}
-                    >
-                        <ParticipantTile
-                            participant={participant}
-                            presetName={participant.presetName as PresetName}
-                            meeting={meeting}
-                            isActiveSpeaker={lastActiveSpeaker === participant.id}
-                        />
-                    </div>
+                        participant={participant}
+                        presetName={participant.presetName as PresetName}
+                        meeting={meeting}
+                        isActiveSpeaker={lastActiveSpeaker === participant.id}
+                    />
                 ))}
             </div>
         );
@@ -244,7 +234,7 @@ export default function RecordingView() {
                     flex: 1,
                     position: 'relative',
                     overflow: 'hidden',
-                    gap: '4px', // Reduced gap
+                    gap: '4px',
                 }}
             >
                 {renderParticipantsColumn(leftColumnParticipants, {
@@ -259,16 +249,15 @@ export default function RecordingView() {
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'flex-start',
-                        padding: '4px', // Reduced padding
+                        padding: '4px',
                     }}
                 >
                     {renderParticipantsColumn(judgeParticipants, {
                         width: '100%',
-                        flex: '1 1 auto',
                     })}
                     <div
                         style={{
-                            marginTop: '12px', // Reduced margin
+                            marginTop: '8px',
                             display: 'flex',
                             justifyContent: 'center',
                         }}

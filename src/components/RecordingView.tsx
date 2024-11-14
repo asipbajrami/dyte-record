@@ -61,24 +61,24 @@ const ParticipantTile = React.memo(({
 
     return (
         <div
-            key={participant.id}
             style={{
-                width: '98%', // Reduced width to 90%
                 position: 'relative',
-                borderRadius: '18px',
+                width: '100%',
+                paddingTop: '56.25%', // 16:9 aspect ratio
+                border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 0.8)' : 'none',
+                boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none',
+                borderRadius: '16px',
                 overflow: 'hidden',
+                marginBottom: '2px', // Small margin between participants
             }}
         >
             <div
+                key={participant.id}
                 style={{
+                    width: '98%', // Reduced width to 90%
                     position: 'relative',
-                    width: '100%',
-                    paddingTop: '56.25%', // 16:9 aspect ratio
-                    border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 0.8)' : 'none',
-                    boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none',
-                    borderRadius: '16px',
+                    borderRadius: '18px',
                     overflow: 'hidden',
-                    marginBottom: '2px', // Small margin between participants
                 }}
             >
                 <DyteParticipantTile
@@ -101,7 +101,7 @@ const ParticipantTile = React.memo(({
                             color: 'white',
                         }}
                     >
-                        <DyteAudioVisualizer participant={participant} slot="start" />
+                        <DyteAudioVisualizer participant={participant} slot="start"/>
                     </DyteNameTag>
                 </DyteParticipantTile>
             </div>
@@ -126,7 +126,7 @@ const ParticipantTile = React.memo(({
 });
 
 export default function RecordingView() {
-    const { meeting } = useDyteMeeting();
+    const {meeting} = useDyteMeeting();
     const [participants, setParticipants] = useState<DyteParticipant[]>([]);
 
     const lastActiveSpeaker = useDyteSelector(

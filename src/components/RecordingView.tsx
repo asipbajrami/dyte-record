@@ -199,7 +199,7 @@ export default function RecordingView() {
                     ...columnStyle,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '2px', // Minimal gap between participants
+                    gap: '8px', // Minimal gap between participants
                     padding: '2px', // Minimal padding
                     height: '100%',
                     overflow: 'hidden', // Prevent overflow
@@ -236,7 +236,7 @@ export default function RecordingView() {
                     flex: 1,
                     position: 'relative',
                     overflow: 'hidden',
-                    gap: '2px', // Minimal gap between columns
+                    gap: '8px', // Minimal gap between columns
                 }}
             >
                 {renderParticipantsColumn(leftColumnParticipants, {

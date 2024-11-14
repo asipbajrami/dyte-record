@@ -63,16 +63,16 @@ const ParticipantTile = React.memo(({
         <div
             key={participant.id}
             style={{
-                width: '96%', // Reduced width to 90%
+                width: '98%', // Reduced width to 90%
                 position: 'relative',
-                borderRadius: '16px',
+                borderRadius: '18px',
                 overflow: 'hidden',
             }}
         >
             <div
                 style={{
                     position: 'relative',
-                    width: '102%',
+                    width: '100%',
                     paddingTop: '56.25%', // 16:9 aspect ratio
                     border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 0.8)' : 'none',
                     boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none',

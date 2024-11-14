@@ -63,16 +63,16 @@ const ParticipantTile = React.memo(({
         <div
             key={participant.id}
             style={{
-                width: '98%', // Reduced width to 90%
+                width: '98%', // Reduced width to 98%
                 position: 'relative',
-                borderRadius: '18px',
+                borderRadius: '16px',
                 overflow: 'hidden',
             }}
         >
             <div
                 style={{
                     position: 'relative',
-                    width: '120%',
+                    width: '100%',
                     paddingTop: '56.25%', // 16:9 aspect ratio
                     border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 0.8)' : 'none',
                     boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none',
@@ -199,7 +199,7 @@ export default function RecordingView() {
                     ...columnStyle,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '0px', // Minimal gap between participants
+                    gap: '2px', // Minimal gap between participants
                     padding: '2px', // Minimal padding
                     height: '100%',
                     overflow: 'hidden', // Prevent overflow
@@ -236,7 +236,7 @@ export default function RecordingView() {
                     flex: 1,
                     position: 'relative',
                     overflow: 'hidden',
-                    gap: '0px', // Minimal gap between columns
+                    gap: '2px', // Minimal gap between columns
                 }}
             >
                 {renderParticipantsColumn(leftColumnParticipants, {
@@ -259,7 +259,7 @@ export default function RecordingView() {
                     })}
                     <div
                         style={{
-                            marginTop: '6px',
+                            marginTop: '4px',
                             display: 'flex',
                             justifyContent: 'center',
                         }}

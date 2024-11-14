@@ -18,10 +18,10 @@ const SOLO = 'solo';
 type PresetName = typeof AFFIRMATIVE | typeof NEGATIVE | typeof JUDGE | typeof SOLO;
 
 const presetColors: { [key in PresetName]: string } = {
-    [AFFIRMATIVE]: '#043B6D',
-    [NEGATIVE]: '#641316',
-    [JUDGE]: '#0D0B0E',
-    [SOLO]: '#471a55',
+    [AFFIRMATIVE]: '#043B6D', // Blue
+    [NEGATIVE]: '#641316',    // Red
+    [JUDGE]: '#0D0B0E',      // Black
+    [SOLO]: '#471a55',       // Purple
 };
 
 const ParticipantTile = React.memo(({
@@ -29,24 +29,31 @@ const ParticipantTile = React.memo(({
                                         presetName,
                                         meeting,
                                         isActiveSpeaker,
-                                        size = 'normal'
                                     }: {
     participant: DyteParticipant;
     presetName: PresetName;
     meeting: any;
     isActiveSpeaker: boolean;
-    size?: 'normal' | 'large';
 }) => {
     const [isVideoReady, setIsVideoReady] = useState(false);
 
     useEffect(() => {
+        console.log(`Participant ${participant.name} (${participant.id}): Video track status:`, participant.videoEnabled);
+
         const checkVideoTrack = () => {
-            // Fixed type checking for video track
-            setIsVideoReady(participant.videoEnabled && participant.videoTrack ? true : false);
+            if (participant.videoEnabled && participant.videoTrack) {
+                console.log(`Participant ${participant.name} (${participant.id}): Video track ready`);
+                setIsVideoReady(true);
+            } else {
+                console.log(`Participant ${participant.name} (${participant.id}): Video track not ready`);
+                setIsVideoReady(false);
+            }
         };
 
         checkVideoTrack();
+
         const videoUpdateListener = () => {
+            console.log(`Participant ${participant.name} (${participant.id}): Video update event`);
             checkVideoTrack();
         };
 
@@ -60,25 +67,35 @@ const ParticipantTile = React.memo(({
     return (
         <div
             key={participant.id}
-            className={`w-full relative rounded-lg overflow-hidden transition-all duration-300 ease-in-out ${
-                size === 'large' ? 'h-full' : ''
-            }`}
             style={{
-                border: isActiveSpeaker ? '4px solid #4CAF50' : '2px solid transparent',
-                boxShadow: isActiveSpeaker ? '0 0 20px rgba(76, 175, 80, 0.5)' : 'none',
+                width: '100%',
+                position: 'relative',
+                borderRadius: '12px', // Slightly increased border radius
+                overflow: 'hidden',
+                border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 0.8)' : '2px solid transparent', // Enhanced active speaker border
+                boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none', // Added subtle glow for active speaker
+                transition: 'all 0.3s ease-in-out',
             }}
         >
             <div
-                className="relative w-full"
                 style={{
-                    paddingTop: size === 'large' ? '75%' : '56.25%',
+                    position: 'relative',
+                    width: '100%',
+                    paddingTop: '56.25%', // 16:9 aspect ratio
                 }}
             >
                 <DyteParticipantTile
                     key={participant.id}
                     participant={participant}
                     meeting={meeting}
-                    className="absolute top-0 left-0 w-full h-full transition-all duration-300"
+                    style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        transition: 'all 0.3s ease-in-out',
+                    }}
                 >
                     <DyteNameTag
                         participant={participant}
@@ -92,7 +109,18 @@ const ParticipantTile = React.memo(({
                 </DyteParticipantTile>
             </div>
             {!isVideoReady && (
-                <div className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 text-white">
+                <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    color: 'white',
+                }}>
                     Loading...
                 </div>
             )}
@@ -103,9 +131,12 @@ const ParticipantTile = React.memo(({
 export default function RecordingView() {
     const { meeting } = useDyteMeeting();
     const [participants, setParticipants] = useState<DyteParticipant[]>([]);
+
+    // Get active speaker using useDyteSelector
     const lastActiveSpeaker = useDyteSelector(
         (meeting) => meeting.participants.lastActiveSpeaker
     );
+
     const joinedParticipants = useDyteSelector((meeting) =>
         meeting.participants.joined.toArray()
     );
@@ -118,22 +149,32 @@ export default function RecordingView() {
     );
 
     useEffect(() => {
+        console.log('Joined participants:', joinedParticipants);
         debouncedSetParticipants(() => joinedParticipants);
 
         const handleParticipantJoin = (participant: DyteParticipant) => {
+            console.log('Participant joined:', participant);
             debouncedSetParticipants((prev) => [...prev, participant]);
         };
 
         const handleParticipantLeave = (participant: DyteParticipant) => {
+            console.log('Participant left:', participant);
             debouncedSetParticipants((prev) => prev.filter((p) => p.id !== participant.id));
         };
 
+        // Subscribe to activeSpeaker events
+        const handleActiveSpeaker = ({ peerId, volume }: { peerId: string, volume: number }) => {
+            console.log(`Active speaker: ${peerId} with volume ${volume}`);
+        };
+
+        meeting.participants.on('activeSpeaker', handleActiveSpeaker);
         meeting.participants.joined.on('participantJoined', handleParticipantJoin);
         meeting.participants.joined.on('participantLeft', handleParticipantLeave);
 
         return () => {
             meeting.participants.joined.off('participantJoined', handleParticipantJoin);
             meeting.participants.joined.off('participantLeft', handleParticipantLeave);
+            meeting.participants.off('activeSpeaker', handleActiveSpeaker);
         };
     }, [meeting, joinedParticipants, debouncedSetParticipants]);
 
@@ -151,11 +192,6 @@ export default function RecordingView() {
     const judgeParticipants = getParticipantsByPreset(JUDGE);
     const soloParticipants = getParticipantsByPreset(SOLO);
 
-    const isSpecialLayout =
-        (negativeParticipants.length === 1 || soloParticipants.length === 1) &&
-        affirmativeParticipants.length === 1 &&
-        judgeParticipants.length === 1;
-
     const leftColumnParticipants = [...negativeParticipants];
     const rightColumnParticipants = [...affirmativeParticipants];
 
@@ -167,99 +203,91 @@ export default function RecordingView() {
         }
     });
 
-    if (isSpecialLayout) {
+    const renderParticipantsColumn = (
+        participants: DyteParticipant[],
+        columnStyle: React.CSSProperties
+    ) => {
         return (
-            <main className="flex flex-col w-screen h-screen bg-black text-white overflow-hidden">
-                <div className="flex flex-1 p-4">
-                    <div className="flex w-full gap-4">
-                        {/* Left participant (Negative or Solo) */}
-                        <div className="w-1/2 h-full">
-                            <ParticipantTile
-                                participant={leftColumnParticipants[0]}
-                                presetName={leftColumnParticipants[0].presetName as PresetName}
-                                meeting={meeting}
-                                isActiveSpeaker={lastActiveSpeaker === leftColumnParticipants[0].id}
-                                size="large"
-                            />
-                        </div>
-
-                        {/* Right participant (Affirmative) */}
-                        <div className="w-1/2 h-full">
-                            <ParticipantTile
-                                participant={rightColumnParticipants[0]}
-                                presetName={rightColumnParticipants[0].presetName as PresetName}
-                                meeting={meeting}
-                                isActiveSpeaker={lastActiveSpeaker === rightColumnParticipants[0].id}
-                                size="large"
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Bottom Judge */}
-                <div className="w-full h-64 p-4">
+            <div
+                style={{
+                    ...columnStyle,
+                    display: 'grid',
+                    gridTemplateRows: `repeat(${participants.length}, 1fr)`,
+                    gap: '8px', // Slightly reduced gap to give more space to participants
+                    padding: '8px', // Reduced padding to give more space to participants
+                }}
+            >
+                {participants.map((participant) => (
                     <ParticipantTile
-                        participant={judgeParticipants[0]}
-                        presetName={JUDGE}
+                        key={participant.id}
+                        participant={participant}
+                        presetName={participant.presetName as PresetName}
                         meeting={meeting}
-                        isActiveSpeaker={lastActiveSpeaker === judgeParticipants[0].id}
+                        isActiveSpeaker={lastActiveSpeaker === participant.id}
                     />
-                </div>
-                <DyteParticipantsAudio meeting={meeting} />
-            </main>
+                ))}
+            </div>
         );
-    }
+    };
 
     return (
-        <main className="flex flex-col w-screen h-screen bg-black text-white overflow-hidden">
-            <div className="flex flex-1 relative overflow-hidden">
-                {/* Left Column */}
-                <div className="w-1/3 p-4 grid gap-4" style={{ gridTemplateRows: `repeat(${leftColumnParticipants.length}, 1fr)` }}>
-                    {leftColumnParticipants.map((participant) => (
-                        <ParticipantTile
-                            key={participant.id}
-                            participant={participant}
-                            presetName={participant.presetName as PresetName}
-                            meeting={meeting}
-                            isActiveSpeaker={lastActiveSpeaker === participant.id}
-                        />
-                    ))}
-                </div>
+        <main
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100vw',
+                height: '100vh',
+                backgroundColor: '#000',
+                color: 'white',
+                overflow: 'hidden',
+            }}
+        >
+            <div
+                style={{
+                    display: 'flex',
+                    flex: 1,
+                    position: 'relative',
+                    overflow: 'hidden',
+                    gap: '8px', // Added small gap between columns
+                }}
+            >
+                {renderParticipantsColumn(leftColumnParticipants, {
+                    width: '33.33%',
+                })}
 
-                {/* Center Column */}
-                <div className="w-1/3 flex flex-col justify-center items-center p-4">
-                    <div className="w-full grid gap-4" style={{ gridTemplateRows: `repeat(${judgeParticipants.length}, 1fr)` }}>
-                        {judgeParticipants.map((participant) => (
-                            <ParticipantTile
-                                key={participant.id}
-                                participant={participant}
-                                presetName={JUDGE}
-                                meeting={meeting}
-                                isActiveSpeaker={lastActiveSpeaker === participant.id}
-                            />
-                        ))}
-                    </div>
-                    <div className="mt-5">
+                <div
+                    style={{
+                        width: '33.33%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        padding: '8px',
+                    }}
+                >
+                    {renderParticipantsColumn(judgeParticipants, {
+                        width: '100%',
+                    })}
+                    <div
+                        style={{
+                            marginTop: '16px',
+                        }}
+                    >
                         <img
                             src={logo}
                             alt="Logo"
-                            className="max-w-[150px] max-h-[150px] object-contain"
+                            style={{
+                                maxWidth: '150px',
+                                maxHeight: '150px',
+                                objectFit: 'contain',
+                            }}
                         />
                     </div>
                 </div>
 
-                {/* Right Column */}
-                <div className="w-1/3 p-4 grid gap-4" style={{ gridTemplateRows: `repeat(${rightColumnParticipants.length}, 1fr)` }}>
-                    {rightColumnParticipants.map((participant) => (
-                        <ParticipantTile
-                            key={participant.id}
-                            participant={participant}
-                            presetName={participant.presetName as PresetName}
-                            meeting={meeting}
-                            isActiveSpeaker={lastActiveSpeaker === participant.id}
-                        />
-                    ))}
-                </div>
+                {renderParticipantsColumn(rightColumnParticipants, {
+                    width: '33.33%',
+                })}
             </div>
             <DyteParticipantsAudio meeting={meeting} />
         </main>

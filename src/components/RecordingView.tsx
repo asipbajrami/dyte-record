@@ -63,10 +63,10 @@ const ParticipantTile = React.memo(({
         <div
             key={participant.id}
             style={{
-                flex: '0 0 auto', // Ensure the tiles don't grow or shrink beyond their content size
-                width: '90%', // Set the initial width to 1/3 of the container
-                padding: '2px', // Add some padding around the tiles
-                boxSizing: 'border-box', // Include the padding in the width calculation
+                width: '100%',
+                position: 'relative',
+                borderRadius: '16px',
+                overflow: 'hidden',
             }}
         >
             <div
@@ -78,6 +78,7 @@ const ParticipantTile = React.memo(({
                     boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : 'none',
                     borderRadius: '16px',
                     overflow: 'hidden',
+                    marginBottom: '2px', // Small margin between participants
                 }}
             >
                 <DyteParticipantTile
@@ -232,8 +233,7 @@ export default function RecordingView() {
             <div
                 style={{
                     display: 'flex',
-                    flexWrap: 'wrap', // Allow the tiles to wrap to the next line if needed
-                    flex: '1 1 auto', // Allow the container to grow and shrink as needed
+                    flex: 1,
                     position: 'relative',
                     overflow: 'hidden',
                     gap: '2px', // Minimal gap between columns

@@ -63,8 +63,8 @@ const ParticipantTile = React.memo(({
         <div
             key={participant.id}
             style={{
-                width: '97.5%',
-                height: '97.5%',
+                width: '98.5%',
+                height: '98.5%',
                 position: 'relative',
                 borderRadius: '16px',
                 overflow: 'hidden',
@@ -200,7 +200,7 @@ export default function RecordingView() {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '0px', // Minimal gap between participants
-                    padding: '0px', // Minimal padding
+                    padding: '8px', // Minimal padding
                     height: '100%',
                     overflow: 'hidden', // Prevent overflow
                 }}

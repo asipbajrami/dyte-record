@@ -200,7 +200,7 @@ export default function RecordingView() {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '0px', // Minimal gap between participants
-                    padding: '2px', // Minimal padding
+                    padding: '0px', // Minimal padding
                     height: '100%',
                     overflow: 'hidden', // Prevent overflow
                 }}
@@ -251,7 +251,7 @@ export default function RecordingView() {
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'flex-start',
-                        padding: '2px',
+                        padding: '0px',
                     }}
                 >
                     {renderParticipantsColumn(judgeParticipants, {

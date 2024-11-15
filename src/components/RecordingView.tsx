@@ -200,7 +200,7 @@ export default function RecordingView() {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '0px', // Minimal gap between participants
-                    padding: '8px', // Minimal padding
+                    padding: '-10px', // Minimal padding
                     height: '100%',
                     overflow: 'hidden', // Prevent overflow
                 }}

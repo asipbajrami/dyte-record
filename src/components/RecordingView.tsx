@@ -79,6 +79,7 @@ const ParticipantTile = React.memo(({
                     boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : '0 0 10px rgba(255, 255, 255, 0)',
                     borderRadius: '16px',
                     marginBottom: '2px', // Small margin between participants
+                    padding: '-2px',
                 }}
             >
                 <DyteParticipantTile

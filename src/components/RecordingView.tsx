@@ -63,7 +63,8 @@ const ParticipantTile = React.memo(({
         <div
             key={participant.id}
             style={{
-                width: '95%',
+                width: '97.5%',
+                height: '97.5%',
                 position: 'relative',
                 borderRadius: '16px',
                 overflow: 'hidden',
@@ -77,7 +78,6 @@ const ParticipantTile = React.memo(({
                     border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 1)' : '4px solid rgba(255, 255, 255, 0)',
                     boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : '0 0 10px rgba(255, 255, 255, 0)',
                     borderRadius: '16px',
-                    overflow: 'hidden',
                     marginBottom: '2px', // Small margin between participants
                 }}
             >
@@ -199,7 +199,7 @@ export default function RecordingView() {
                     ...columnStyle,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '2px', // Minimal gap between participants
+                    gap: '0px', // Minimal gap between participants
                     padding: '2px', // Minimal padding
                     height: '100%',
                     overflow: 'hidden', // Prevent overflow
@@ -236,7 +236,7 @@ export default function RecordingView() {
                     flex: 1,
                     position: 'relative',
                     overflow: 'hidden',
-                    gap: '2px', // Minimal gap between columns
+                    gap: '0px', // Minimal gap between columns
                 }}
             >
                 {renderParticipantsColumn(leftColumnParticipants, {

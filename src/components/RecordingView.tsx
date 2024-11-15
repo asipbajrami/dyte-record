@@ -74,7 +74,7 @@ const ParticipantTile = React.memo(({
                 style={{
                     position: 'relative',
                     width: '100%',
-                    paddingTop: '58%', // 16:9 aspect ratio
+                    paddingTop: '52%', // 16:9 aspect ratio
                     border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 1)' : '4px solid rgba(255, 255, 255, 0)',
                     boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : '0 0 10px rgba(255, 255, 255, 0)',
                     borderRadius: '16px',

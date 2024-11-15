@@ -199,10 +199,10 @@ export default function RecordingView() {
                     ...columnStyle,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '0px', // Minimal gap between participants
-                    padding: '0px', // Minimal padding
+                    gap: '4px', // Minimal gap between participants
+                    padding: '4px', // Minimal padding
                     height: '100%',
-                    overflow: 'hidden', // Prevent overflow
+                    overflow: 'auto', // Allow scrolling if needed
                 }}
             >
                 {participants.map((participant) => (
@@ -236,22 +236,21 @@ export default function RecordingView() {
                     flex: 1,
                     position: 'relative',
                     overflow: 'hidden',
-                    gap: '0px', // Minimal gap between columns
+                    gap: '1px', // Minimal gap between columns
+                    padding: '1px', // Minimal padding
                 }}
             >
                 {renderParticipantsColumn(leftColumnParticipants, {
-                    width: '33.333%',
-                    minWidth: '33.333%',
+                    flex: 1,
                 })}
 
                 <div
                     style={{
-                        width: '33.333%',
-                        minWidth: '33.333%',
+                        flex: 1,
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'flex-start',
-                        padding: '0px',
+                        padding: '4px',
                     }}
                 >
                     {renderParticipantsColumn(judgeParticipants, {
@@ -277,8 +276,7 @@ export default function RecordingView() {
                 </div>
 
                 {renderParticipantsColumn(rightColumnParticipants, {
-                    width: '33.333%',
-                    minWidth: '33.333%',
+                    flex: 1,
                 })}
             </div>
             <DyteParticipantsAudio meeting={meeting} />

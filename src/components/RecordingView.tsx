@@ -199,10 +199,10 @@ export default function RecordingView() {
                     ...columnStyle,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '4px', // Minimal gap between participants
-                    padding: '4px', // Minimal padding
+                    gap: '0px', // Minimal gap between participants
+                    padding: '0px', // Minimal padding
                     height: '100%',
-                    overflow: 'auto', // Allow scrolling if needed
+                    overflow: 'hidden', // Prevent overflow
                 }}
             >
                 {participants.map((participant) => (
@@ -236,21 +236,22 @@ export default function RecordingView() {
                     flex: 1,
                     position: 'relative',
                     overflow: 'hidden',
-                    gap: '1px', // Minimal gap between columns
-                    padding: '1px', // Minimal padding
+                    gap: '0px', // Minimal gap between columns
                 }}
             >
                 {renderParticipantsColumn(leftColumnParticipants, {
-                    flex: 1,
+                    width: '33.333%',
+                    minWidth: '33.333%',
                 })}
 
                 <div
                     style={{
-                        flex: 1,
+                        width: '33.333%',
+                        minWidth: '33.333%',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'flex-start',
-                        padding: '4px',
+                        padding: '0px',
                     }}
                 >
                     {renderParticipantsColumn(judgeParticipants, {
@@ -276,7 +277,8 @@ export default function RecordingView() {
                 </div>
 
                 {renderParticipantsColumn(rightColumnParticipants, {
-                    flex: 1,
+                    width: '33.333%',
+                    minWidth: '33.333%',
                 })}
             </div>
             <DyteParticipantsAudio meeting={meeting} />

@@ -63,7 +63,7 @@ const ParticipantTile = React.memo(({
         <div
             key={participant.id}
             style={{
-                width: '100%',
+                width: '95%',
                 position: 'relative',
                 borderRadius: '16px',
                 overflow: 'hidden',

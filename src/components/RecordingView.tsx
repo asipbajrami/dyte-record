@@ -74,7 +74,7 @@ const ParticipantTile = React.memo(({
                 style={{
                     position: 'relative',
                     width: '100%',
-                    paddingTop: '56.25%', // 16:9 aspect ratio
+                    paddingTop: '58%', // 16:9 aspect ratio
                     border: isActiveSpeaker ? '4px solid rgba(255, 255, 255, 1)' : '4px solid rgba(255, 255, 255, 0)',
                     boxShadow: isActiveSpeaker ? '0 0 10px rgba(255, 255, 255, 0.3)' : '0 0 10px rgba(255, 255, 255, 0)',
                     borderRadius: '16px',
@@ -200,7 +200,7 @@ export default function RecordingView() {
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '0px', // Minimal gap between participants
-                    padding: '-10px', // Minimal padding
+                    padding: '0px', // Minimal padding
                     height: '100%',
                     overflow: 'hidden', // Prevent overflow
                 }}
@@ -240,14 +240,14 @@ export default function RecordingView() {
                 }}
             >
                 {renderParticipantsColumn(leftColumnParticipants, {
-                    width: '33.33%',
-                    minWidth: '33.33%',
+                    width: '33.333%',
+                    minWidth: '33.333%',
                 })}
 
                 <div
                     style={{
-                        width: '33.33%',
-                        minWidth: '33.33%',
+                        width: '33.333%',
+                        minWidth: '33.333%',
                         display: 'flex',
                         flexDirection: 'column',
                         justifyContent: 'flex-start',
@@ -277,8 +277,8 @@ export default function RecordingView() {
                 </div>
 
                 {renderParticipantsColumn(rightColumnParticipants, {
-                    width: '33.33%',
-                    minWidth: '33.33%',
+                    width: '33.333%',
+                    minWidth: '33.333%',
                 })}
             </div>
             <DyteParticipantsAudio meeting={meeting} />

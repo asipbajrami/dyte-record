@@ -218,71 +218,108 @@ export default function RecordingView() {
             </div>
         );
     };
+    const shouldUseAlternateLayout = judgeParticipants.length === 1 && (
+        (soloParticipants.length === 2) ||
+        (negativeParticipants.length === 1 && affirmativeParticipants.length === 1)
+    );
 
     return (
-        <main
-            style={{
+        <main style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100vw',
+            height: '100vh',
+            backgroundColor: '#000',
+            color: 'white',
+            overflow: 'hidden',
+        }}>
+            <div style={{
                 display: 'flex',
-                flexDirection: 'column',
-                width: '100vw',
-                height: '100vh',
-                backgroundColor: '#000',
-                color: 'white',
+                flex: 1,
+                flexDirection: shouldUseAlternateLayout ? 'column' : 'row',
+                position: 'relative',
                 overflow: 'hidden',
-            }}
-        >
-            <div
-                style={{
-                    display: 'flex',
-                    flex: 1,
-                    position: 'relative',
-                    overflow: 'hidden',
-                    gap: '0px', // Minimal gap between columns
-                }}
-            >
-                {renderParticipantsColumn(leftColumnParticipants, {
-                    width: '33.333%',
-                    minWidth: '33.333%',
-                })}
-
-                <div
-                    style={{
-                        width: '33.333%',
-                        minWidth: '33.333%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'flex-start',
-                        padding: '0px',
-                    }}
-                >
-                    {renderParticipantsColumn(judgeParticipants, {
-                        width: '100%',
-                    })}
-                    <div
-                        style={{
-                            marginTop: '4px',
+                gap: '0px',
+            }}>
+                {shouldUseAlternateLayout ? (
+                    <>
+                        <div style={{
                             display: 'flex',
-                            justifyContent: 'center',
-                        }}
-                    >
-                        <img
-                            src={logo}
-                            alt="Logo"
-                            style={{
-                                width: '100px', // Reduced logo size
-                                height: '100px',
-                                objectFit: 'contain',
-                            }}
-                        />
-                    </div>
-                </div>
-
-                {renderParticipantsColumn(rightColumnParticipants, {
-                    width: '33.333%',
-                    minWidth: '33.333%',
-                })}
+                            flex: 2,
+                            gap: '0px',
+                        }}>
+                            {renderParticipantsColumn(leftColumnParticipants, {
+                                width: '50%',
+                                minWidth: '50%',
+                            })}
+                            {renderParticipantsColumn(rightColumnParticipants, {
+                                width: '50%',
+                                minWidth: '50%',
+                            })}
+                        </div>
+                        <div style={{
+                            display: 'flex',
+                            flex: 1,
+                            flexDirection: 'column',
+                        }}>
+                            {renderParticipantsColumn(judgeParticipants, {
+                                width: '100%',
+                            })}
+                            <div style={{
+                                marginTop: '4px',
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}>
+                                <img
+                                    src={logo}
+                                    alt="Logo"
+                                    style={{
+                                        width: '100px',
+                                        height: '100px',
+                                        objectFit: 'contain',
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </>
+                ) : (
+                    // Original 3-column layout
+                    <>
+                        {renderParticipantsColumn(leftColumnParticipants, {
+                            width: '33.333%',
+                            minWidth: '33.333%',
+                        })}
+                        <div style={{
+                            width: '33.333%',
+                            minWidth: '33.333%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'flex-start',
+                            padding: '0px',
+                        }}>
+                            {renderParticipantsColumn(judgeParticipants, {
+                                width: '100%',
+                            })}
+                            <div style={{
+                                marginTop: '4px',
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}>
+                                <img src={logo} alt="Logo" style={{
+                                    width: '100px',
+                                    height: '100px',
+                                    objectFit: 'contain',
+                                }} />
+                            </div>
+                        </div>
+                        {renderParticipantsColumn(rightColumnParticipants, {
+                            width: '33.333%',
+                            minWidth: '33.333%',
+                        })}
+                    </>
+                )}
             </div>
             <DyteParticipantsAudio meeting={meeting} />
         </main>
     );
-}
+};

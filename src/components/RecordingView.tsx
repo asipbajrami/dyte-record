@@ -236,31 +236,35 @@ export default function RecordingView() {
             <div style={{
                 display: 'flex',
                 flex: 1,
-                flexDirection: shouldUseAlternateLayout ? 'column' : 'row',
                 position: 'relative',
                 overflow: 'hidden',
                 gap: '0px',
             }}>
                 {shouldUseAlternateLayout ? (
-                    <>
+                    <div style={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        width: '100%',
+                        height: '100%',
+                        position: 'relative',
+                    }}>
+                        {renderParticipantsColumn(leftColumnParticipants, {
+                            width: '33.333%',
+                            height: '50%',
+                            position: 'absolute',
+                            left: 0,
+                            top: 0,
+                        })}
+
                         <div style={{
+                            width: '33.333%',
+                            position: 'absolute',
+                            left: '33.333%',
+                            top: '25%',
+                            height: '50%',
                             display: 'flex',
-                            flex: 2,
-                            gap: '0px',
-                        }}>
-                            {renderParticipantsColumn(leftColumnParticipants, {
-                                width: '50%',
-                                minWidth: '50%',
-                            })}
-                            {renderParticipantsColumn(rightColumnParticipants, {
-                                width: '50%',
-                                minWidth: '50%',
-                            })}
-                        </div>
-                        <div style={{
-                            display: 'flex',
-                            flex: 1,
                             flexDirection: 'column',
+                            justifyContent: 'flex-start',
                         }}>
                             {renderParticipantsColumn(judgeParticipants, {
                                 width: '100%',
@@ -270,20 +274,24 @@ export default function RecordingView() {
                                 display: 'flex',
                                 justifyContent: 'center',
                             }}>
-                                <img
-                                    src={logo}
-                                    alt="Logo"
-                                    style={{
-                                        width: '100px',
-                                        height: '100px',
-                                        objectFit: 'contain',
-                                    }}
-                                />
+                                <img src={logo} alt="Logo" style={{
+                                    width: '100px',
+                                    height: '100px',
+                                    objectFit: 'contain',
+                                }} />
                             </div>
                         </div>
-                    </>
+
+                        {renderParticipantsColumn(rightColumnParticipants, {
+                            width: '33.333%',
+                            height: '50%',
+                            position: 'absolute',
+                            right: 0,
+                            top: 0,
+                        })}
+                    </div>
                 ) : (
-                    // Original 3-column layout
+                    // Original 3-column layout remains unchanged
                     <>
                         {renderParticipantsColumn(leftColumnParticipants, {
                             width: '33.333%',

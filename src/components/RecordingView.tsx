@@ -237,60 +237,63 @@ export default function RecordingView() {
             <div style={{
                 display: 'flex',
                 flex: 1,
+                flexDirection: 'column',
                 position: 'relative',
                 overflow: 'hidden',
-                gap: '0px',
+                gap: '8px', // Small gap between rows
             }}>
                 {shouldUseAlternateLayout ? (
-                    <div style={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        width: '100%',
-                        height: '100%',
-                        position: 'relative',
-                    }}>
-                        {/* Side participants taking 50% width each */}
-                        <div style={{width: '50%', height: '100%'}}>
-                            {renderParticipantsColumn(leftColumnParticipants, {
-                                width: '100%',
-                                height: '100%',
-                            })}
-                        </div>
-
-                        <div style={{width: '50%', height: '100%'}}>
-                            {renderParticipantsColumn(rightColumnParticipants, {
-                                width: '100%',
-                                height: '100%',
-                            })}
-                        </div>
-
-                        {/* Judge centered with 33% width */}
+                    <>
+                        {/* Top row with 50-50 split */}
                         <div style={{
-                            position: 'absolute',
-                            width: '33.333%',
-                            left: '33.333%',
-                            top: '25%',
-                            height: '50%',
+                            display: 'flex',
+                            width: '100%',
+                            height: '60%', // Takes up more vertical space
                         }}>
-                            {renderParticipantsColumn(judgeParticipants, {
-                                width: '100%',
-                            })}
-                            <div style={{
-                                marginTop: '4px',
-                                display: 'flex',
-                                justifyContent: 'center',
-                            }}>
-                                <img src={logo} alt="Logo" style={{
-                                    width: '100px',
-                                    height: '100px',
-                                    objectFit: 'contain',
-                                }}/>
+                            <div style={{ width: '50%', height: '100%' }}>
+                                {renderParticipantsColumn(leftColumnParticipants, {
+                                    width: '100%',
+                                    height: '100%',
+                                })}
+                            </div>
+                            <div style={{ width: '50%', height: '100%' }}>
+                                {renderParticipantsColumn(rightColumnParticipants, {
+                                    width: '100%',
+                                    height: '100%',
+                                })}
                             </div>
                         </div>
-                    </div>
+
+                        {/* Bottom row with centered judge */}
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            width: '100%',
+                            height: '40%', // Takes up less vertical space
+                        }}>
+                            <div style={{
+                                width: '33.333%',
+                            }}>
+                                {renderParticipantsColumn(judgeParticipants, {
+                                    width: '100%',
+                                })}
+                                <div style={{
+                                    marginTop: '4px',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                }}>
+                                    <img src={logo} alt="Logo" style={{
+                                        width: '100px',
+                                        height: '100px',
+                                        objectFit: 'contain',
+                                    }} />
+                                </div>
+                            </div>
+                        </div>
+                    </>
                 ) : (
-                    // Original 3-column layout
-                    <>
+                    // Original 3-column layout unchanged
+                    <div style={{ display: 'flex', height: '100%' }}>
                         {renderParticipantsColumn(leftColumnParticipants, {
                             width: '33.333%',
                             minWidth: '33.333%',
@@ -315,17 +318,17 @@ export default function RecordingView() {
                                     width: '100px',
                                     height: '100px',
                                     objectFit: 'contain',
-                                }}/>
+                                }} />
                             </div>
                         </div>
                         {renderParticipantsColumn(rightColumnParticipants, {
                             width: '33.333%',
                             minWidth: '33.333%',
                         })}
-                    </>
+                    </div>
                 )}
             </div>
-            <DyteParticipantsAudio meeting={meeting}/>
+            <DyteParticipantsAudio meeting={meeting} />
         </main>
     );
 }

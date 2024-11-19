@@ -127,7 +127,7 @@ const ParticipantTile = React.memo(({
 });
 
 export default function RecordingView() {
-    const { meeting } = useDyteMeeting();
+    const {meeting} = useDyteMeeting();
     const [participants, setParticipants] = useState<DyteParticipant[]>([]);
 
     const lastActiveSpeaker = useDyteSelector(
@@ -218,6 +218,7 @@ export default function RecordingView() {
             </div>
         );
     };
+
     const shouldUseAlternateLayout = judgeParticipants.length === 1 && (
         (soloParticipants.length === 2) ||
         (negativeParticipants.length === 1 && affirmativeParticipants.length === 1)
@@ -243,28 +244,33 @@ export default function RecordingView() {
                 {shouldUseAlternateLayout ? (
                     <div style={{
                         display: 'flex',
-                        flexDirection: 'row',
+                        flexWrap: 'wrap',
                         width: '100%',
                         height: '100%',
                         position: 'relative',
                     }}>
-                        {renderParticipantsColumn(leftColumnParticipants, {
-                            width: '33.333%',
-                            height: '50%',
-                            position: 'absolute',
-                            left: 0,
-                            top: 0,
-                        })}
+                        {/* Side participants taking 50% width each */}
+                        <div style={{width: '50%', height: '100%'}}>
+                            {renderParticipantsColumn(leftColumnParticipants, {
+                                width: '100%',
+                                height: '100%',
+                            })}
+                        </div>
 
+                        <div style={{width: '50%', height: '100%'}}>
+                            {renderParticipantsColumn(rightColumnParticipants, {
+                                width: '100%',
+                                height: '100%',
+                            })}
+                        </div>
+
+                        {/* Judge centered with 33% width */}
                         <div style={{
-                            width: '33.333%',
                             position: 'absolute',
+                            width: '33.333%',
                             left: '33.333%',
                             top: '25%',
                             height: '50%',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            justifyContent: 'flex-start',
                         }}>
                             {renderParticipantsColumn(judgeParticipants, {
                                 width: '100%',
@@ -278,20 +284,12 @@ export default function RecordingView() {
                                     width: '100px',
                                     height: '100px',
                                     objectFit: 'contain',
-                                }} />
+                                }}/>
                             </div>
                         </div>
-
-                        {renderParticipantsColumn(rightColumnParticipants, {
-                            width: '33.333%',
-                            height: '50%',
-                            position: 'absolute',
-                            right: 0,
-                            top: 0,
-                        })}
                     </div>
                 ) : (
-                    // Original 3-column layout remains unchanged
+                    // Original 3-column layout
                     <>
                         {renderParticipantsColumn(leftColumnParticipants, {
                             width: '33.333%',
@@ -317,7 +315,7 @@ export default function RecordingView() {
                                     width: '100px',
                                     height: '100px',
                                     objectFit: 'contain',
-                                }} />
+                                }}/>
                             </div>
                         </div>
                         {renderParticipantsColumn(rightColumnParticipants, {
@@ -327,7 +325,7 @@ export default function RecordingView() {
                     </>
                 )}
             </div>
-            <DyteParticipantsAudio meeting={meeting} />
+            <DyteParticipantsAudio meeting={meeting}/>
         </main>
     );
-};
+}
